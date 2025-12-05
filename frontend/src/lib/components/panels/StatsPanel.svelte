@@ -5,6 +5,7 @@
 	import { KpiCard } from '$lib/components/dashboard';
 	import { ProviderPieChart, DailyVolumeChart } from '$lib/components/charts';
 	import { t, locale } from 'svelte-i18n';
+	import { slide } from 'svelte/transition';
 
 	// Props
 	let { isOpen = $bindable(false) } = $props<{ isOpen: boolean }>();
@@ -12,6 +13,7 @@
 	let stats: DashboardStats | null = $state(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	let isOpenAIExpanded = $state(false);
 
 	// Load stats when opened
 	$effect(() => {
@@ -37,13 +39,13 @@
 			return new Intl.NumberFormat('zh-TW', {
 				style: 'currency',
 				currency: 'TWD',
-				minimumFractionDigits: 0
+				minimumFractionDigits: 3
 			}).format(value * 32.5);
 		}
 		return new Intl.NumberFormat('en-US', {
 			style: 'currency',
 			currency: 'USD',
-			minimumFractionDigits: 2
+			minimumFractionDigits: 3
 		}).format(value);
 	}
 
@@ -170,9 +172,25 @@
 							<h3 class="mb-4 text-lg font-semibold text-slate-800">{$t('stats.provider_quotas')}</h3>
 							<div class="space-y-6">
 								<!-- OpenAI -->
-								<div>
+								<div 
+									class="cursor-pointer transition-all hover:opacity-80"
+									onclick={() => isOpenAIExpanded = !isOpenAIExpanded}
+									role="button"
+									tabindex="0"
+									onkeydown={(e) => e.key === 'Enter' && (isOpenAIExpanded = !isOpenAIExpanded)}
+								>
 									<div class="mb-2 flex justify-between text-sm">
-										<span class="font-medium text-slate-700">OpenAI API</span>
+										<div class="flex items-center gap-2">
+											<span class="font-medium text-slate-700">OpenAI API</span>
+											<svg 
+												class="h-4 w-4 text-slate-400 transition-transform {isOpenAIExpanded ? 'rotate-180' : ''}" 
+												fill="none" 
+												viewBox="0 0 24 24" 
+												stroke="currentColor"
+											>
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+											</svg>
+										</div>
 										<span class="text-slate-500">
 											{formatTokens(stats.openai_tokens_input_month + stats.openai_tokens_output_month)} tokens
 											<span class="ml-1 text-slate-400">({formatCurrency(stats.openai_cost_month)})</span>
@@ -184,6 +202,21 @@
 											style="width: 100%"
 										></div>
 									</div>
+
+									{#if isOpenAIExpanded}
+										<div class="mt-3 grid grid-cols-2 gap-4 border-t border-slate-100 pt-3 text-xs" transition:slide>
+											<div>
+												<p class="font-medium text-slate-600">Input</p>
+												<p class="text-slate-500">{formatTokens(stats.openai_tokens_input_month)} tokens</p>
+												<p class="text-slate-400">≈ {formatCurrency(stats.openai_tokens_input_month / 1000000 * 0.15)}</p>
+											</div>
+											<div class="text-right">
+												<p class="font-medium text-slate-600">Output</p>
+												<p class="text-slate-500">{formatTokens(stats.openai_tokens_output_month)} tokens</p>
+												<p class="text-slate-400">≈ {formatCurrency(stats.openai_tokens_output_month / 1000000 * 0.60)}</p>
+											</div>
+										</div>
+									{/if}
 								</div>
 
 								<!-- DeepL -->
@@ -191,7 +224,7 @@
 									<div class="mb-2 flex justify-between text-sm">
 										<span class="font-medium text-slate-700">DeepL API (Free)</span>
 										<span class="text-slate-500">
-											{formatNumber(stats.deepl_chars_month)} chars ({stats.deepl_quota_percent.toFixed(1)}%)
+											{formatNumber(stats.deepl_chars_month)} / {formatNumber(stats.deepl_quota_limit)} chars ({stats.deepl_quota_percent.toFixed(1)}%)
 										</span>
 									</div>
 									<div class="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
@@ -207,7 +240,7 @@
 									<div class="mb-2 flex justify-between text-sm">
 										<span class="font-medium text-slate-700">Google Translate API</span>
 										<span class="text-slate-500">
-											{formatNumber(stats.google_chars_month)} chars ({stats.google_quota_percent.toFixed(1)}%)
+											{formatNumber(stats.google_chars_month)} / {formatNumber(stats.google_quota_limit)} chars ({stats.google_quota_percent.toFixed(1)}%)
 										</span>
 									</div>
 									<div class="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
@@ -216,6 +249,24 @@
 											style="width: {Math.min(stats.google_quota_percent, 100)}%"
 										></div>
 									</div>
+								</div>
+							</div>
+						</div>
+						
+						<!-- Billing Rules -->
+						<div class="rounded-xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+							<h3 class="mb-4 text-lg font-semibold text-slate-800">{$t('stats.billing_rules')}</h3>
+							<div class="grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
+								<div>
+									<p class="font-medium text-slate-700">OpenAI (gpt-4o-mini)</p>
+									<ul class="mt-1 list-inside list-disc space-y-1">
+										<li>Input: $0.15 / 1M tokens</li>
+										<li>Output: $0.60 / 1M tokens</li>
+									</ul>
+								</div>
+								<div>
+									<p class="font-medium text-slate-700">{$t('stats.exchange_rate')}</p>
+									<p class="mt-1">1 USD ≈ 32.5 TWD</p>
 								</div>
 							</div>
 						</div>

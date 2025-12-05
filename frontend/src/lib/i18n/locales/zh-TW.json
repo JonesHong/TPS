@@ -5,6 +5,7 @@
   },
   "nav": {
     "translate": "翻譯",
+    "files": "檔案翻譯",
     "history": "歷史紀錄",
     "dashboard": "儀表板",
     "settings": "設定"
@@ -55,7 +56,20 @@
     "est_cost": "預估成本",
     "provider_usage": "服務使用分佈",
     "daily_volume": "每日流量 (近7天)",
-    "provider_quotas": "服務配額"
+    "provider_quotas": "服務配額",
+    "billing_rules": "計費規則",
+    "exchange_rate": "匯率"
+  },
+  "files": {
+    "title": "檔案翻譯",
+    "upload_desc": "拖放檔案至此，或點擊選擇",
+    "upload_btn": "選擇檔案",
+    "translating": "翻譯中...",
+    "completed": "已完成",
+    "error": "錯誤",
+    "download": "下載",
+    "clear_all": "清除全部",
+    "translate_all": "全部翻譯"
   },
   "common": {
     "loading": "載入中...",

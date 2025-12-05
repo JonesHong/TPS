@@ -5,6 +5,7 @@
   },
   "nav": {
     "translate": "Translate",
+    "files": "File Translation",
     "history": "History",
     "dashboard": "Dashboard",
     "settings": "Settings"
@@ -55,7 +56,20 @@
     "est_cost": "Est. Cost",
     "provider_usage": "Provider Usage",
     "daily_volume": "Daily Volume (Last 7 Days)",
-    "provider_quotas": "Provider Quotas"
+    "provider_quotas": "Provider Quotas",
+    "billing_rules": "Billing Rules",
+    "exchange_rate": "Exchange Rate"
+  },
+  "files": {
+    "title": "File Translation",
+    "upload_desc": "Drag & drop files here, or click to select",
+    "upload_btn": "Select Files",
+    "translating": "Translating...",
+    "completed": "Completed",
+    "error": "Error",
+    "download": "Download",
+    "clear_all": "Clear All",
+    "translate_all": "Translate All"
   },
   "common": {
     "loading": "Loading...",

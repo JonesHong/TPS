@@ -71,6 +71,21 @@
 					</span>
 				</a>
 
+				<!-- File Translation -->
+				<a 
+					href="/files" 
+					class="group relative flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-200 {$page.url.pathname === '/files' && !isHistoryOpen && !isStatsOpen ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}"
+					onclick={closeAll}
+					title={$t('nav.files')}
+				>
+					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+					</svg>
+					<span class="absolute left-16 rounded-md bg-slate-800 px-3 py-1.5 text-sm font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 border border-slate-700">
+						{$t('nav.files')}
+					</span>
+				</a>
+
 				<!-- History -->
 				<button 
 					class="group relative flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-200 {isHistoryOpen ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}"

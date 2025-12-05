@@ -29,6 +29,32 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
 	return post<TranslateResponse, TranslateRequest>('/translate', request);
 }
 
+export async function translateFile(
+	file: File,
+	targetLang: string,
+	sourceLang?: string,
+	enableRefinement: boolean = false,
+	preferredProvider?: string
+): Promise<TranslateResponse> {
+	const formData = new FormData();
+	formData.append('file', file);
+	formData.append('target_lang', targetLang);
+	if (sourceLang) formData.append('source_lang', sourceLang);
+	formData.append('enable_refinement', String(enableRefinement));
+	if (preferredProvider) formData.append('preferred_provider', preferredProvider);
+
+	const response = await fetch('/api/v1/translate/file', {
+		method: 'POST',
+		body: formData
+	});
+
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+
+	return response.json();
+}
+
 export async function getLanguages(): Promise<LanguagesResponse> {
 	return get<LanguagesResponse>('/languages');
 }

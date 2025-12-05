@@ -1,8 +1,9 @@
 """FastAPI REST API routes for TPS"""
 
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
 from pydantic import BaseModel, Field
+from fastapi.responses import PlainTextResponse
 
 from ..core.workflow import TranslationWorkflow, TranslationOptions, TranslationResponse
 from ..core.cost_control import CostController
@@ -109,6 +110,8 @@ class DashboardStatsResponse(BaseModel):
     openai_cost_month: float = 0.0
     deepl_quota_percent: float = 0.0
     google_quota_percent: float = 0.0
+    deepl_quota_limit: int = 500000
+    google_quota_limit: int = 500000
 
 
 class LanguagesResponse(BaseModel):
@@ -187,6 +190,55 @@ async def translate(
             success=False,
             error=result.error
         )
+
+
+@router.post("/translate/file", tags=["Translation"])
+async def translate_file(
+    file: UploadFile = File(...),
+    source_lang: Optional[str] = Query(default=None),
+    target_lang: str = Query(...),
+    enable_refinement: bool = Query(default=False),
+    preferred_provider: Optional[str] = Query(default=None),
+    workflow: TranslationWorkflow = Depends(get_workflow)
+) -> APIResponse:
+    """
+    Translate an uploaded text file.
+    """
+    try:
+        content = await file.read()
+        text = content.decode("utf-8")
+        
+        options = TranslationOptions(
+            enable_refinement=enable_refinement,
+            preferred_provider=preferred_provider
+        )
+        
+        result: TranslationResponse = await workflow.translate(
+            text=text,
+            source_lang=source_lang,
+            target_lang=target_lang,
+            options=options
+        )
+        
+        if result.success:
+            return APIResponse(
+                success=True,
+                data=TranslationData(
+                    text=result.text,
+                    provider=result.provider,
+                    is_refined=result.is_refined,
+                    is_cached=result.is_cached
+                )
+            )
+        else:
+            return APIResponse(
+                success=False,
+                error=result.error
+            )
+    except UnicodeDecodeError:
+        return APIResponse(success=False, error="Invalid file encoding. Please upload UTF-8 text files.")
+    except Exception as e:
+        return APIResponse(success=False, error=str(e))
 
 
 @router.get("/health", response_model=HealthResponse, tags=["System"])
@@ -345,7 +397,9 @@ async def get_dashboard_stats(
         openai_tokens_output_month=stats.get("openai_tokens_output_month", 0),
         openai_cost_month=stats.get("openai_cost_month", 0.0),
         deepl_quota_percent=stats.get("deepl_quota_percent", 0.0),
-        google_quota_percent=stats.get("google_quota_percent", 0.0)
+        google_quota_percent=stats.get("google_quota_percent", 0.0),
+        deepl_quota_limit=stats.get("deepl_quota_limit", 500000),
+        google_quota_limit=stats.get("google_quota_limit", 500000)
     )
 
 

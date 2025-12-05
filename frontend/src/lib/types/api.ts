@@ -49,6 +49,8 @@ export interface DashboardStats {
 	openai_cost_month: number;
 	deepl_quota_percent: number;
 	google_quota_percent: number;
+	deepl_quota_limit: number;
+	google_quota_limit: number;
 }
 
 // Translate request

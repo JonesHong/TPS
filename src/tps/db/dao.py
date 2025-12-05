@@ -463,7 +463,9 @@ class TranslationDAO:
                 "openai_tokens_output_month": openai_tokens_output_month,
                 "openai_cost_month": openai_cost_month,
                 "deepl_quota_percent": round(deepl_quota_percent, 2),
-                "google_quota_percent": round(google_quota_percent, 2)
+                "google_quota_percent": round(google_quota_percent, 2),
+                "deepl_quota_limit": FREE_QUOTA_LIMIT,
+                "google_quota_limit": FREE_QUOTA_LIMIT
             }
 
     async def get_available_languages(self) -> dict:
