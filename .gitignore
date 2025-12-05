@@ -38,3 +38,4 @@ htmlcov/
 Thumbs.db
 
 backups/**
+node_modules/**

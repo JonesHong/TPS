@@ -1,0 +1,65 @@
+{
+  "app": {
+    "name": "TPS",
+    "title": "Translation Proxy System"
+  },
+  "nav": {
+    "translate": "Translate",
+    "history": "History",
+    "dashboard": "Dashboard",
+    "settings": "Settings"
+  },
+  "translate": {
+    "from": "From",
+    "to": "To",
+    "provider": "Provider",
+    "swap": "Swap languages",
+    "refinement": "AI Refinement",
+    "ai_powered": "AI-powered (no refinement needed)",
+    "original_text": "Original Text",
+    "translation": "Translation",
+    "placeholder": "Enter text to translate...",
+    "clear": "Clear",
+    "translate_btn": "Translate",
+    "translating": "Translating...",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "chars": "chars",
+    "refined": "Refined",
+    "cached": "Cached",
+    "error_empty": "Please enter text to translate",
+    "error_target": "Please select a target language",
+    "failed": "Translation failed"
+  },
+  "history": {
+    "title": "Translation History",
+    "search_placeholder": "Search translations...",
+    "load": "Load",
+    "columns": {
+      "time": "Time",
+      "languages": "Languages",
+      "original": "Original",
+      "translated": "Translated",
+      "provider": "Provider",
+      "actions": "Actions"
+    },
+    "empty": "No translations found"
+  },
+  "stats": {
+    "title": "Dashboard Statistics",
+    "loading": "Loading stats...",
+    "error": "Failed to load stats",
+    "total_requests": "Total Requests",
+    "total_chars": "Total Characters",
+    "cache_hit_rate": "Cache Hit Rate",
+    "est_cost": "Est. Cost",
+    "provider_usage": "Provider Usage",
+    "daily_volume": "Daily Volume (Last 7 Days)",
+    "provider_quotas": "Provider Quotas"
+  },
+  "common": {
+    "loading": "Loading...",
+    "close": "Close",
+    "auto_detect": "Auto Detect"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "app": {
+    "name": "TPS",
+    "title": "翻譯代理系統"
+  },
+  "nav": {
+    "translate": "翻譯",
+    "history": "歷史紀錄",
+    "dashboard": "儀表板",
+    "settings": "設定"
+  },
+  "translate": {
+    "from": "來源",
+    "to": "目標",
+    "provider": "服務提供者",
+    "swap": "交換語言",
+    "refinement": "AI 優化",
+    "ai_powered": "AI 驅動 (無需額外優化)",
+    "original_text": "原文",
+    "translation": "譯文",
+    "placeholder": "輸入要翻譯的文字...",
+    "clear": "清除",
+    "translate_btn": "翻譯",
+    "translating": "翻譯中...",
+    "copy": "複製",
+    "copied": "已複製！",
+    "chars": "字元",
+    "refined": "已優化",
+    "cached": "快取",
+    "error_empty": "請輸入要翻譯的文字",
+    "error_target": "請選擇目標語言",
+    "failed": "翻譯失敗"
+  },
+  "history": {
+    "title": "翻譯歷史",
+    "search_placeholder": "搜尋翻譯紀錄...",
+    "load": "載入",
+    "columns": {
+      "time": "時間",
+      "languages": "語言",
+      "original": "原文",
+      "translated": "譯文",
+      "provider": "提供者",
+      "actions": "操作"
+    },
+    "empty": "找不到翻譯紀錄"
+  },
+  "stats": {
+    "title": "儀表板統計",
+    "loading": "載入統計中...",
+    "error": "無法載入統計",
+    "total_requests": "總請求數",
+    "total_chars": "總字元數",
+    "cache_hit_rate": "快取命中率",
+    "est_cost": "預估成本",
+    "provider_usage": "服務使用分佈",
+    "daily_volume": "每日流量 (近7天)",
+    "provider_quotas": "服務配額"
+  },
+  "common": {
+    "loading": "載入中...",
+    "close": "關閉",
+    "auto_detect": "自動偵測"
+  }
+}
