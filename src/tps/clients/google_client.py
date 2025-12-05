@@ -97,7 +97,7 @@ class GoogleTranslateClient(BaseTranslationClient):
     async def translate(
         self,
         text: str,
-        source_lang: str,
+        source_lang: Optional[str],
         target_lang: str
     ) -> TranslationResult:
         """
@@ -105,7 +105,7 @@ class GoogleTranslateClient(BaseTranslationClient):
         
         Args:
             text: Text to translate
-            source_lang: Source language code
+            source_lang: Source language code (None for auto-detect)
             target_lang: Target language code
             
         Returns:
@@ -114,8 +114,8 @@ class GoogleTranslateClient(BaseTranslationClient):
         try:
             client = self._get_client()
             
-            # Map language codes
-            source = self._map_language(source_lang)
+            # Map language codes (None for source = auto-detect)
+            source = self._map_language(source_lang) if source_lang else None
             target = self._map_language(target_lang)
             
             # Prepare request
@@ -125,15 +125,17 @@ class GoogleTranslateClient(BaseTranslationClient):
             loop = asyncio.get_event_loop()
             
             def do_translate():
-                response = client.translate_text(
-                    request={
-                        "parent": parent,
-                        "contents": [text],
-                        "mime_type": "text/plain",
-                        "source_language_code": source,
-                        "target_language_code": target,
-                    }
-                )
+                request = {
+                    "parent": parent,
+                    "contents": [text],
+                    "mime_type": "text/plain",
+                    "target_language_code": target,
+                }
+                # Only add source_language_code if specified (otherwise auto-detect)
+                if source:
+                    request["source_language_code"] = source
+                
+                response = client.translate_text(request=request)
                 return response.translations[0].translated_text
             
             translated_text = await loop.run_in_executor(None, do_translate)

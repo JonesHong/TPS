@@ -40,6 +40,7 @@ class TranslationOptions:
     format_type: str = "plain"
     enable_refinement: bool = False
     refinement_model: Optional[str] = None
+    preferred_provider: Optional[str] = None  # 'auto', 'deepl', 'openai', 'google'
 
 
 class TranslationWorkflow:
@@ -73,7 +74,7 @@ class TranslationWorkflow:
     async def translate(
         self,
         text: str,
-        source_lang: str,
+        source_lang: Optional[str],
         target_lang: str,
         options: Optional[TranslationOptions] = None
     ) -> TranslationResponse:
@@ -82,7 +83,7 @@ class TranslationWorkflow:
         
         Args:
             text: Text to translate
-            source_lang: Source language code
+            source_lang: Source language code (None for auto-detect)
             target_lang: Target language code
             options: Translation options
             
@@ -91,9 +92,12 @@ class TranslationWorkflow:
         """
         options = options or TranslationOptions()
         
+        # Use 'auto' for source_lang if not provided (for cache key generation)
+        effective_source_lang = source_lang or 'auto'
+        
         # Step 1: Generate cache key and check cache
         cache_key = generate_cache_key(
-            text, source_lang, target_lang, options.format_type
+            text, effective_source_lang, target_lang, options.format_type
         )
         
         cached = await self.dao.get_cached_translation(cache_key)
@@ -117,7 +121,7 @@ class TranslationWorkflow:
         
         try:
             result, provider_used = await self._execute_translation_chain(
-                text, source_lang, target_lang
+                text, source_lang, target_lang, options.preferred_provider
             )
         except Exception as e:
             logger.error(f"Translation chain failed: {e}")
@@ -152,7 +156,7 @@ class TranslationWorkflow:
         # Step 6: Save to cache
         await self.dao.upsert_translation(
             cache_key=cache_key,
-            source_lang=source_lang,
+            source_lang=effective_source_lang,
             target_lang=target_lang,
             original_text=text,
             translated_text=translated_text,
@@ -172,14 +176,25 @@ class TranslationWorkflow:
     async def _execute_translation_chain(
         self,
         text: str,
-        source_lang: str,
-        target_lang: str
+        source_lang: Optional[str],
+        target_lang: str,
+        preferred_provider: Optional[str] = None
     ) -> tuple[Optional[TranslationResult], Optional[str]]:
         """
         Execute the translation chain with failover.
         
-        Order: DeepL -> OpenAI -> Google
+        Order: DeepL -> OpenAI -> Google (unless preferred_provider is specified)
         """
+        # If a specific provider is preferred, try it first
+        if preferred_provider and preferred_provider != "auto":
+            result, provider = await self._try_specific_provider(
+                preferred_provider, text, source_lang, target_lang
+            )
+            if result:
+                return result, provider
+            # If preferred provider fails, fall through to chain
+            logger.warning(f"Preferred provider {preferred_provider} failed, falling back to chain")
+        
         # Tier 2: DeepL
         if not self.cost_controller.is_quota_exceeded("deepl"):
             try:
@@ -231,6 +246,61 @@ class TranslationWorkflow:
                 logger.warning(f"Google translation failed: {e}")
         else:
             logger.warning("Google budget exceeded, skipping")
+        
+        return None, None
+    
+    async def _try_specific_provider(
+        self,
+        provider: str,
+        text: str,
+        source_lang: Optional[str],
+        target_lang: str
+    ) -> tuple[Optional[TranslationResult], Optional[str]]:
+        """Try a specific provider directly."""
+        
+        if provider == "deepl":
+            if not self.cost_controller.is_quota_exceeded("deepl"):
+                try:
+                    if await self.deepl.is_available():
+                        result = await self.deepl.translate(text, source_lang, target_lang)
+                        await self.cost_controller.record_usage(
+                            "deepl",
+                            char_count=result.char_count
+                        )
+                        return result, "deepl"
+                except QuotaExceededException:
+                    self.cost_controller.set_quota_exceeded("deepl")
+                except Exception as e:
+                    logger.warning(f"DeepL failed: {e}")
+        
+        elif provider == "openai":
+            if not await self.cost_controller.is_openai_budget_exceeded():
+                try:
+                    if await self.openai.is_available():
+                        result = await self.openai.translate(text, source_lang, target_lang)
+                        await self.cost_controller.record_usage(
+                            "openai_trans",
+                            token_input=result.token_input,
+                            token_output=result.token_output,
+                            cost_estimated=result.cost_estimated
+                        )
+                        return result, "openai"
+                except Exception as e:
+                    logger.warning(f"OpenAI translation failed: {e}")
+        
+        elif provider == "google":
+            if not await self.cost_controller.is_budget_exceeded("google"):
+                try:
+                    if await self.google.is_available():
+                        result = await self.google.translate(text, source_lang, target_lang)
+                        await self.cost_controller.record_usage(
+                            "google",
+                            char_count=result.char_count,
+                            cost_estimated=result.cost_estimated
+                        )
+                        return result, "google"
+                except Exception as e:
+                    logger.warning(f"Google translation failed: {e}")
         
         return None, None
     

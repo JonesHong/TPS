@@ -76,7 +76,7 @@ class DeepLClient(BaseTranslationClient):
     async def translate(
         self,
         text: str,
-        source_lang: str,
+        source_lang: Optional[str],
         target_lang: str
     ) -> TranslationResult:
         """
@@ -84,7 +84,7 @@ class DeepLClient(BaseTranslationClient):
         
         Args:
             text: Text to translate
-            source_lang: Source language code
+            source_lang: Source language code (None for auto-detect)
             target_lang: Target language code
             
         Returns:
@@ -98,8 +98,8 @@ class DeepLClient(BaseTranslationClient):
         try:
             translator = self._get_translator()
             
-            # Map language codes
-            source = self._map_language(source_lang, is_target=False)
+            # Map language codes (None for source means auto-detect)
+            source = self._map_language(source_lang, is_target=False) if source_lang else None
             target = self._map_language(target_lang, is_target=True)
             
             # Run synchronous DeepL call in executor
