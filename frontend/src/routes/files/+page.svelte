@@ -23,6 +23,31 @@
 	let enableRefinement = $state(false);
 	let fileInput: HTMLInputElement;
 
+	// Language options
+	let commonLanguages = $derived([
+		{ value: '', label: $t('common.auto_detect') },
+		{ value: 'zh-TW', label: '繁體中文 (Traditional Chinese)' },
+		{ value: 'zh-CN', label: '简体中文 (Simplified Chinese)' },
+		{ value: 'en', label: 'English' },
+		{ value: 'ja', label: '日本語 (Japanese)' },
+		{ value: 'ko', label: '한국어 (Korean)' },
+		{ value: 'ms', label: 'Bahasa Melayu (Malay)' },
+		{ value: 'vi', label: 'Tiếng Việt (Vietnamese)' },
+		{ value: 'th', label: 'ไทย (Thai)' },
+		{ value: 'id', label: 'Bahasa Indonesia (Indonesian)' },
+		{ value: 'tl', label: 'Tagalog (Filipino)' },
+		{ value: 'fr', label: 'Français (French)' },
+		{ value: 'de', label: 'Deutsch (German)' },
+		{ value: 'es', label: 'Español (Spanish)' },
+		{ value: 'it', label: 'Italiano (Italian)' },
+		{ value: 'ru', label: 'Русский (Russian)' },
+		{ value: 'pt', label: 'Português (Portuguese)' },
+		{ value: 'ar', label: 'العربية (Arabic)' },
+		{ value: 'hi', label: 'हिन्दी (Hindi)' }
+	]);
+
+	let targetLanguageOptions = $derived(commonLanguages.filter((l) => l.value !== ''));
+
 	// Handlers
 	function handleDragOver(e: DragEvent) {
 		e.preventDefault();
@@ -173,11 +198,9 @@
 				bind:value={sourceLang}
 				class="rounded-lg border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
 			>
-				<option value="">{$t('common.auto_detect')}</option>
-				<option value="en">English</option>
-				<option value="zh-TW">Traditional Chinese</option>
-				<option value="ja">Japanese</option>
-				<option value="ko">Korean</option>
+				{#each commonLanguages as lang}
+					<option value={lang.value}>{lang.label}</option>
+				{/each}
 			</select>
 		</div>
 
@@ -188,10 +211,9 @@
 				bind:value={targetLang}
 				class="rounded-lg border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
 			>
-				<option value="zh-TW">Traditional Chinese</option>
-				<option value="en">English</option>
-				<option value="ja">Japanese</option>
-				<option value="ko">Korean</option>
+				{#each targetLanguageOptions as lang}
+					<option value={lang.value}>{lang.label}</option>
+				{/each}
 			</select>
 		</div>
 

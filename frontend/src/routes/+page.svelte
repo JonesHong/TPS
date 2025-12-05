@@ -54,20 +54,24 @@
 	// Language options
 	let commonLanguages = $derived([
 		{ value: '', label: $t('common.auto_detect') },
+		{ value: 'zh-TW', label: '繁體中文 (Traditional Chinese)' },
+		{ value: 'zh-CN', label: '简体中文 (Simplified Chinese)' },
 		{ value: 'en', label: 'English' },
-		{ value: 'zh-TW', label: '繁體中文' },
-		{ value: 'zh-CN', label: '简体中文' },
-		{ value: 'ja', label: '日本語' },
-		{ value: 'ko', label: '한국어' },
-		{ value: 'de', label: 'Deutsch' },
-		{ value: 'fr', label: 'Français' },
-		{ value: 'es', label: 'Español' },
-		{ value: 'pt', label: 'Português' },
-		{ value: 'it', label: 'Italiano' },
-		{ value: 'ru', label: 'Русский' },
-		{ value: 'ar', label: 'العربية' },
-		{ value: 'th', label: 'ไทย' },
-		{ value: 'vi', label: 'Tiếng Việt' }
+		{ value: 'ja', label: '日本語 (Japanese)' },
+		{ value: 'ko', label: '한국어 (Korean)' },
+		{ value: 'ms', label: 'Bahasa Melayu (Malay)' },
+		{ value: 'vi', label: 'Tiếng Việt (Vietnamese)' },
+		{ value: 'th', label: 'ไทย (Thai)' },
+		{ value: 'id', label: 'Bahasa Indonesia (Indonesian)' },
+		{ value: 'tl', label: 'Tagalog (Filipino)' },
+		{ value: 'fr', label: 'Français (French)' },
+		{ value: 'de', label: 'Deutsch (German)' },
+		{ value: 'es', label: 'Español (Spanish)' },
+		{ value: 'it', label: 'Italiano (Italian)' },
+		{ value: 'ru', label: 'Русский (Russian)' },
+		{ value: 'pt', label: 'Português (Portuguese)' },
+		{ value: 'ar', label: 'العربية (Arabic)' },
+		{ value: 'hi', label: 'हिन्दी (Hindi)' }
 	]);
 
 	let targetLanguageOptions = $derived(commonLanguages.filter((l) => l.value !== ''));
