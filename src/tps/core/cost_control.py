@@ -6,6 +6,7 @@ import asyncio
 
 from ..config import settings
 from ..db.dao import TranslationDAO, DailyUsageStats
+from .external_data import ExternalDataService
 
 
 class CostController:
@@ -18,8 +19,9 @@ class CostController:
     - OpenAI: Local budget check (estimated_cost > daily_limit)
     """
     
-    def __init__(self, dao: TranslationDAO):
+    def __init__(self, dao: TranslationDAO, external_data: ExternalDataService):
         self.dao = dao
+        self.external_data = external_data
         
         # In-memory circuit breaker state (resets on restart)
         self._quota_exceeded: Set[str] = set()
@@ -73,7 +75,8 @@ class CostController:
         """
         Check Google budget: (char_count / 1M) * $20 > daily_limit
         """
-        estimated_cost = (usage.char_count / 1_000_000) * settings.google_price_per_million_chars
+        pricing = self.external_data.get_pricing()
+        estimated_cost = (usage.char_count / 1_000_000) * pricing.google_price_per_million_chars
         return estimated_cost >= settings.daily_budget_google
     
     def _check_openai_budget(self, usage: DailyUsageStats, provider: str) -> bool:

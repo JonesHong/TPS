@@ -7,6 +7,7 @@ from fastapi.responses import PlainTextResponse
 
 from ..core.workflow import TranslationWorkflow, TranslationOptions, TranslationResponse
 from ..core.cost_control import CostController
+from ..core.external_data import ExternalDataService
 from ..db.connection import DatabaseManager
 from ..db.dao import TranslationDAO
 
@@ -30,6 +31,7 @@ class TranslationRequest(BaseModel):
 class TranslationData(BaseModel):
     """Data portion of successful translation response"""
     text: str
+    refined_text: Optional[str] = None
     provider: str
     is_refined: bool
     is_cached: bool
@@ -66,6 +68,7 @@ class TranslationItem(BaseModel):
     target_lang: str
     original_text: str
     translated_text: str
+    refined_text: Optional[str] = None
     provider: str
     is_refined: bool
     char_count: int
@@ -112,6 +115,10 @@ class DashboardStatsResponse(BaseModel):
     google_quota_percent: float = 0.0
     deepl_quota_limit: int = 500000
     google_quota_limit: int = 500000
+    # External Data
+    exchange_rate: float = 32.5
+    external_data_updated_at: str = ""
+    pricing_data: dict = {}
 
 
 class LanguagesResponse(BaseModel):
@@ -132,7 +139,9 @@ async def get_workflow() -> TranslationWorkflow:
     """Dependency to get TranslationWorkflow instance"""
     db_manager = await DatabaseManager.get_instance()
     dao = TranslationDAO(db_manager)
-    cost_controller = CostController(dao)
+    external_data = ExternalDataService(db_manager)
+    await external_data.initialize()
+    cost_controller = CostController(dao, external_data)
     return TranslationWorkflow(dao, cost_controller)
 
 
@@ -140,7 +149,9 @@ async def get_cost_controller() -> CostController:
     """Dependency to get CostController instance"""
     db_manager = await DatabaseManager.get_instance()
     dao = TranslationDAO(db_manager)
-    return CostController(dao)
+    external_data = ExternalDataService(db_manager)
+    await external_data.initialize() # Ensure data is loaded
+    return CostController(dao, external_data)
 
 
 # === Endpoints ===
@@ -180,6 +191,7 @@ async def translate(
             success=True,
             data=TranslationData(
                 text=result.text,
+                refined_text=result.refined_text,
                 provider=result.provider,
                 is_refined=result.is_refined,
                 is_cached=result.is_cached
@@ -345,6 +357,7 @@ async def list_translations(
                 target_lang=item.target_lang,
                 original_text=item.original_text,
                 translated_text=item.translated_text,
+                refined_text=item.refined_text,
                 provider=item.provider,
                 is_refined=item.is_refined,
                 char_count=item.char_count,
@@ -364,7 +377,8 @@ async def list_translations(
 @router.get("/stats/dashboard", response_model=DashboardStatsResponse, tags=["Frontend"])
 async def get_dashboard_stats(
     days: int = Query(default=30, ge=1, le=365, description="Number of days for trend data"),
-    dao: TranslationDAO = Depends(get_dao)
+    dao: TranslationDAO = Depends(get_dao),
+    cost_controller: CostController = Depends(get_cost_controller)
 ) -> DashboardStatsResponse:
     """
     Get comprehensive dashboard statistics.
@@ -378,7 +392,21 @@ async def get_dashboard_stats(
     - Daily volume trend
     - Provider quota details (monthly)
     """
+    # Get pricing data to return correct limits
+    pricing = cost_controller.external_data.get_pricing()
+    
     stats = await dao.get_dashboard_stats(days=days)
+    
+    # Override limits with dynamic data
+    stats["deepl_quota_limit"] = pricing.deepl_free_limit
+    stats["google_quota_limit"] = pricing.google_free_limit
+    
+    # Recalculate percentages if needed (DAO uses hardcoded or passed values, let's ensure consistency)
+    if stats["deepl_quota_limit"] > 0:
+        stats["deepl_quota_percent"] = (stats.get("deepl_chars_month", 0) / stats["deepl_quota_limit"]) * 100
+    
+    if stats["google_quota_limit"] > 0:
+        stats["google_quota_percent"] = (stats.get("google_chars_month", 0) / stats["google_quota_limit"]) * 100
     
     return DashboardStatsResponse(
         total_requests=stats["total_requests"],
@@ -399,7 +427,17 @@ async def get_dashboard_stats(
         deepl_quota_percent=stats.get("deepl_quota_percent", 0.0),
         google_quota_percent=stats.get("google_quota_percent", 0.0),
         deepl_quota_limit=stats.get("deepl_quota_limit", 500000),
-        google_quota_limit=stats.get("google_quota_limit", 500000)
+        google_quota_limit=stats.get("google_quota_limit", 500000),
+        # External Data
+        exchange_rate=cost_controller.external_data.get_exchange_rate(),
+        external_data_updated_at=pricing.updated_at,
+        pricing_data={
+            "deepl_free_limit": pricing.deepl_free_limit,
+            "google_free_limit": pricing.google_free_limit,
+            "google_price_per_million_chars": pricing.google_price_per_million_chars,
+            "openai_price_input": pricing.openai_price_input,
+            "openai_price_output": pricing.openai_price_output
+        }
     )
 
 

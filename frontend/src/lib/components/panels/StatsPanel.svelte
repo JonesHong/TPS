@@ -22,16 +22,20 @@
 		}
 	});
 
-	async function loadStats() {
+	async function loadStats(days: number = 30) {
 		loading = true;
 		error = null;
 		try {
-			stats = await getDashboardStats();
+			stats = await getDashboardStats(days);
 		} catch (e) {
 			error = e instanceof Error ? e.message : $t('stats.error');
 		} finally {
 			loading = false;
 		}
+	}
+
+	function handleRangeChange(days: number) {
+		loadStats(days);
 	}
 
 	function formatCurrency(value: number): string {
@@ -160,10 +164,7 @@
 								</div>
 							</div>
 							<div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-								<h3 class="mb-4 text-lg font-semibold text-slate-800">{$t('stats.daily_volume')}</h3>
-								<div class="h-64">
-									<DailyVolumeChart data={stats.daily_trend} />
-								</div>
+								<DailyVolumeChart data={stats.daily_trend} onRangeChange={handleRangeChange} />
 							</div>
 						</div>
 
@@ -253,20 +254,44 @@
 							</div>
 						</div>
 						
-						<!-- Billing Rules -->
-						<div class="rounded-xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-							<h3 class="mb-4 text-lg font-semibold text-slate-800">{$t('stats.billing_rules')}</h3>
-							<div class="grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
-								<div>
-									<p class="font-medium text-slate-700">OpenAI (gpt-4o-mini)</p>
-									<ul class="mt-1 list-inside list-disc space-y-1">
-										<li>Input: $0.15 / 1M tokens</li>
-										<li>Output: $0.60 / 1M tokens</li>
-									</ul>
+						<!-- External Data (Live) -->
+						<div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+							<div class="mb-4 flex items-center justify-between">
+								<h3 class="text-lg font-semibold text-slate-800">{$t('stats.external_data')}</h3>
+								<span class="text-xs text-slate-500">
+									{$t('stats.last_updated')}: {new Date(stats.external_data_updated_at || Date.now()).toLocaleString()}
+								</span>
+							</div>
+							
+							<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+								<!-- Exchange Rate -->
+								<div class="rounded-lg bg-blue-50 p-4">
+									<div class="mb-1 text-xs font-medium text-blue-600">USD / TWD</div>
+									<div class="text-2xl font-bold text-blue-800">{stats.exchange_rate.toFixed(2)}</div>
 								</div>
-								<div>
-									<p class="font-medium text-slate-700">{$t('stats.exchange_rate')}</p>
-									<p class="mt-1">1 USD ≈ 32.5 TWD</p>
+
+								<!-- DeepL Pricing -->
+								<div class="rounded-lg bg-slate-50 p-4">
+									<div class="mb-1 text-xs font-medium text-slate-600">DeepL Free Limit</div>
+									<div class="text-lg font-semibold text-slate-800">{formatNumber(stats.pricing_data.deepl_free_limit)} chars</div>
+								</div>
+
+								<!-- Google Pricing -->
+								<div class="rounded-lg bg-slate-50 p-4">
+									<div class="mb-1 text-xs font-medium text-slate-600">Google Pricing</div>
+									<div class="flex flex-col">
+										<span class="text-xs text-slate-500">Free: {formatNumber(stats.pricing_data.google_free_limit)}</span>
+										<span class="text-sm font-semibold text-slate-800">${stats.pricing_data.google_price_per_million_chars}/1M chars</span>
+									</div>
+								</div>
+
+								<!-- OpenAI Pricing -->
+								<div class="rounded-lg bg-slate-50 p-4">
+									<div class="mb-1 text-xs font-medium text-slate-600">OpenAI (GPT-4o-mini)</div>
+									<div class="flex flex-col">
+										<span class="text-xs text-slate-500">In: ${stats.pricing_data.openai_price_input}/1M</span>
+										<span class="text-xs text-slate-500">Out: ${stats.pricing_data.openai_price_output}/1M</span>
+									</div>
 								</div>
 							</div>
 						</div>

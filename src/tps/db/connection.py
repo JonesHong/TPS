@@ -81,6 +81,7 @@ class DatabaseManager:
                 target_lang TEXT NOT NULL,
                 original_text TEXT NOT NULL,
                 translated_text TEXT NOT NULL,
+                refined_text TEXT,
                 provider TEXT NOT NULL,
                 is_refined INTEGER DEFAULT 0,
                 refinement_model TEXT,

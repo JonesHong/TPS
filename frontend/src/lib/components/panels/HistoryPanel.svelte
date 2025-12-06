@@ -60,7 +60,7 @@
 			items = result.items;
 			meta = result.meta;
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load translations';
+			error = e instanceof Error ? e.message : $t('history.error_load');
 		} finally {
 			loading = false;
 		}
@@ -191,10 +191,7 @@
 					<!-- Pagination -->
 					{#if meta.total_pages > 1}
 						<Pagination
-							currentPage={meta.page}
-							totalPages={meta.total_pages}
-							pageSize={meta.page_size}
-							totalItems={meta.total}
+							{meta}
 							onPageChange={handlePageChange}
 							onPageSizeChange={handlePageSizeChange}
 						/>

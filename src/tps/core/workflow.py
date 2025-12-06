@@ -27,6 +27,7 @@ class TranslationResponse:
     """Standard response from translation workflow"""
     success: bool
     text: Optional[str] = None
+    refined_text: Optional[str] = None
     provider: Optional[str] = None
     is_refined: bool = False
     is_cached: bool = False
@@ -107,9 +108,24 @@ class TranslationWorkflow:
             if not options.enable_refinement or cached.is_refined:
                 await self.dao.update_last_accessed(cache_key)
                 logger.info(f"Cache hit for key {cache_key[:8]}...")
+                
+                # Handle legacy data where refined_text might be None but is_refined is True
+                final_text = cached.translated_text
+                refined_text_out = None
+                
+                if cached.is_refined:
+                    if cached.refined_text:
+                        final_text = cached.refined_text
+                        refined_text_out = cached.refined_text
+                    else:
+                        # Legacy: translated_text holds the refined text
+                        final_text = cached.translated_text
+                        refined_text_out = cached.translated_text
+
                 return TranslationResponse(
                     success=True,
-                    text=cached.translated_text,
+                    text=final_text,
+                    refined_text=refined_text_out,
                     provider="cache",
                     is_refined=cached.is_refined,
                     is_cached=True
@@ -141,6 +157,7 @@ class TranslationWorkflow:
         translated_text = result.text
         is_refined = False
         refinement_model = None
+        refined_text = None
         
         # Step 5: Optional refinement
         if options.enable_refinement and provider_used != "openai":
@@ -149,7 +166,7 @@ class TranslationWorkflow:
                 options.refinement_model
             )
             if refined_result:
-                translated_text = refined_result.text
+                refined_text = refined_result.text
                 is_refined = True
                 refinement_model = refined_result.model
         
@@ -160,6 +177,7 @@ class TranslationWorkflow:
             target_lang=target_lang,
             original_text=text,
             translated_text=translated_text,
+            refined_text=refined_text,
             provider=provider_used,
             is_refined=is_refined,
             refinement_model=refinement_model
@@ -167,7 +185,8 @@ class TranslationWorkflow:
         
         return TranslationResponse(
             success=True,
-            text=translated_text,
+            text=refined_text if is_refined else translated_text,
+            refined_text=refined_text,
             provider=provider_used,
             is_refined=is_refined,
             is_cached=False

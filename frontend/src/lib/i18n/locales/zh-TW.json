@@ -44,7 +44,9 @@
       "provider": "提供者",
       "actions": "操作"
     },
-    "empty": "找不到翻譯紀錄"
+    "empty": "找不到翻譯紀錄",
+    "error_load": "無法載入翻譯紀錄",
+    "refined_label": "已優化"
   },
   "stats": {
     "title": "儀表板統計",
@@ -58,7 +60,14 @@
     "daily_volume": "每日流量 (近7天)",
     "provider_quotas": "服務配額",
     "billing_rules": "計費規則",
-    "exchange_rate": "匯率"
+    "exchange_rate": "匯率",
+    "external_data": "外部數據 (即時)",
+    "last_updated": "最後更新",
+    "pricing": "定價資訊",
+    "days_7": "7天",
+    "days_30": "30天",
+    "days_90": "3個月",
+    "unit_chars": "字元"
   },
   "files": {
     "title": "檔案翻譯",
@@ -69,11 +78,45 @@
     "error": "錯誤",
     "download": "下載",
     "clear_all": "清除全部",
-    "translate_all": "全部翻譯"
+    "translate_all": "全部翻譯",
+    "description": "上傳文件以進行翻譯並保留格式。",
+    "error_failed": "翻譯失敗",
+    "error_unknown": "未知錯誤"
   },
   "common": {
     "loading": "載入中...",
     "close": "關閉",
-    "auto_detect": "自動偵測"
+    "auto_detect": "自動偵測",
+    "all": "全部",
+    "provider": "服務提供者",
+    "from": "來源",
+    "to": "目標"
+  },
+  "providers": {
+    "auto": "自動 (DeepL → OpenAI → Google)",
+    "deepl": "DeepL (免費額度: 50萬/月)",
+    "openai": "OpenAI GPT-4o-mini",
+    "google": "Google 翻譯",
+    "cache": "快取"
+  },
+  "languages": {
+    "zh-TW": "繁體中文",
+    "zh-CN": "簡體中文",
+    "en": "英文",
+    "ja": "日文",
+    "ko": "韓文",
+    "ms": "馬來文",
+    "vi": "越南文",
+    "th": "泰文",
+    "id": "印尼文",
+    "tl": "菲律賓文",
+    "fr": "法文",
+    "de": "德文",
+    "es": "西班牙文",
+    "it": "義大利文",
+    "ru": "俄文",
+    "pt": "葡萄牙文",
+    "ar": "阿拉伯文",
+    "hi": "印地文"
   }
 }

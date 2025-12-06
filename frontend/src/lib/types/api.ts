@@ -1,8 +1,9 @@
 // Translation Item from history
 export interface TranslationItem {
-	id: number;
+	cache_key: string;
 	original_text: string;
 	translated_text: string;
+	refined_text?: string;
 	source_lang: string;
 	target_lang: string;
 	provider: 'cache' | 'deepl' | 'openai' | 'google';
@@ -51,6 +52,16 @@ export interface DashboardStats {
 	google_quota_percent: number;
 	deepl_quota_limit: number;
 	google_quota_limit: number;
+	// External Data
+	exchange_rate: number;
+	external_data_updated_at: string;
+	pricing_data: {
+		deepl_free_limit: number;
+		google_free_limit: number;
+		google_price_per_million_chars: number;
+		openai_price_input: number;
+		openai_price_output: number;
+	};
 }
 
 // Translate request

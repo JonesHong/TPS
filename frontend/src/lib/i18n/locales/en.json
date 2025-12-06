@@ -44,7 +44,9 @@
       "provider": "Provider",
       "actions": "Actions"
     },
-    "empty": "No translations found"
+    "empty": "No translations found",
+    "error_load": "Failed to load translations",
+    "refined_label": "Refined"
   },
   "stats": {
     "title": "Dashboard Statistics",
@@ -58,7 +60,14 @@
     "daily_volume": "Daily Volume (Last 7 Days)",
     "provider_quotas": "Provider Quotas",
     "billing_rules": "Billing Rules",
-    "exchange_rate": "Exchange Rate"
+    "exchange_rate": "Exchange Rate",
+    "external_data": "External Data (Live)",
+    "last_updated": "Last Updated",
+    "pricing": "Pricing",
+    "days_7": "7 Days",
+    "days_30": "30 Days",
+    "days_90": "3 Months",
+    "unit_chars": "Characters"
   },
   "files": {
     "title": "File Translation",
@@ -69,11 +78,45 @@
     "error": "Error",
     "download": "Download",
     "clear_all": "Clear All",
-    "translate_all": "Translate All"
+    "translate_all": "Translate All",
+    "description": "Upload documents to translate them while preserving formatting.",
+    "error_failed": "Translation failed",
+    "error_unknown": "Unknown error"
   },
   "common": {
     "loading": "Loading...",
     "close": "Close",
-    "auto_detect": "Auto Detect"
+    "auto_detect": "Auto Detect",
+    "all": "All",
+    "provider": "Provider",
+    "from": "From",
+    "to": "To"
+  },
+  "providers": {
+    "auto": "Auto (DeepL → OpenAI → Google)",
+    "deepl": "DeepL (Free: 500K/month)",
+    "openai": "OpenAI GPT-4o-mini",
+    "google": "Google Translate",
+    "cache": "Cache"
+  },
+  "languages": {
+    "zh-TW": "Traditional Chinese",
+    "zh-CN": "Simplified Chinese",
+    "en": "English",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "ms": "Malay",
+    "vi": "Vietnamese",
+    "th": "Thai",
+    "id": "Indonesian",
+    "tl": "Filipino",
+    "fr": "French",
+    "de": "German",
+    "es": "Spanish",
+    "it": "Italian",
+    "ru": "Russian",
+    "pt": "Portuguese",
+    "ar": "Arabic",
+    "hi": "Hindi"
   }
 }

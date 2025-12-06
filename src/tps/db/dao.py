@@ -15,6 +15,7 @@ class CachedTranslation:
     target_lang: str
     original_text: str
     translated_text: str
+    refined_text: Optional[str]
     provider: str
     is_refined: bool
     refinement_model: Optional[str]
@@ -69,6 +70,7 @@ class TranslationDAO:
                 target_lang=row["target_lang"],
                 original_text=row["original_text"],
                 translated_text=row["translated_text"],
+                refined_text=row["refined_text"] if "refined_text" in row.keys() else None,
                 provider=row["provider"],
                 is_refined=bool(row["is_refined"]),
                 refinement_model=row["refinement_model"],
@@ -86,6 +88,7 @@ class TranslationDAO:
         original_text: str,
         translated_text: str,
         provider: str,
+        refined_text: Optional[str] = None,
         is_refined: bool = False,
         refinement_model: Optional[str] = None,
         expires_at: Optional[datetime] = None
@@ -98,11 +101,12 @@ class TranslationDAO:
                 """
                 INSERT INTO translations (
                     cache_key, source_lang, target_lang, original_text, 
-                    translated_text, provider, is_refined, refinement_model,
+                    translated_text, refined_text, provider, is_refined, refinement_model,
                     char_count, created_at, last_accessed_at, expires_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)
                 ON CONFLICT(cache_key) DO UPDATE SET
                     translated_text = excluded.translated_text,
+                    refined_text = excluded.refined_text,
                     provider = excluded.provider,
                     is_refined = excluded.is_refined,
                     refinement_model = excluded.refinement_model,
@@ -110,7 +114,7 @@ class TranslationDAO:
                 """,
                 (
                     cache_key, source_lang, target_lang, original_text,
-                    translated_text, provider, int(is_refined), refinement_model,
+                    translated_text, refined_text, provider, int(is_refined), refinement_model,
                     char_count, expires_at
                 )
             )
@@ -257,9 +261,9 @@ class TranslationDAO:
         params = []
         
         if search_query:
-            conditions.append("(original_text LIKE ? OR translated_text LIKE ?)")
+            conditions.append("(original_text LIKE ? OR translated_text LIKE ? OR refined_text LIKE ?)")
             search_pattern = f"%{search_query}%"
-            params.extend([search_pattern, search_pattern])
+            params.extend([search_pattern, search_pattern, search_pattern])
         
         if providers:
             placeholders = ",".join("?" * len(providers))
@@ -305,6 +309,7 @@ class TranslationDAO:
                     target_lang=row["target_lang"],
                     original_text=row["original_text"],
                     translated_text=row["translated_text"],
+                    refined_text=row["refined_text"] if "refined_text" in row.keys() else None,
                     provider=row["provider"],
                     is_refined=bool(row["is_refined"]),
                     refinement_model=row["refinement_model"],

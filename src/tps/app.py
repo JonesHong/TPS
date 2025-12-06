@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api.routes import router
 from .config import settings
 from .db.connection import DatabaseManager
+from .core.external_data import ExternalDataService
 
 
 # Configure logging
@@ -29,6 +30,10 @@ async def lifespan(app: FastAPI):
     # Initialize database
     db_manager = await DatabaseManager.get_instance()
     logger.info(f"Database initialized at {settings.db_path}")
+    
+    # Initialize external data service (Exchange rates & Pricing)
+    external_data = ExternalDataService(db_manager)
+    await external_data.initialize()
     
     yield
     

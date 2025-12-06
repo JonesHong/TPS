@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { t } from 'svelte-i18n';
+
 	interface Props {
 		providers: string[];
 		sourceLanguages: string[];
@@ -23,12 +25,12 @@
 		onTargetLangChange
 	}: Props = $props();
 
-	const providerLabels: Record<string, string> = {
-		cache: 'Cache',
+	let providerLabels = $derived({
+		cache: $t('providers.cache'),
 		deepl: 'DeepL',
 		openai: 'OpenAI',
 		google: 'Google'
-	};
+	});
 
 	const providerColors: Record<string, string> = {
 		cache: 'bg-green-500',
@@ -49,7 +51,7 @@
 <div class="flex flex-wrap items-center gap-4">
 	<!-- Provider filters -->
 	<div class="flex items-center gap-2">
-		<span class="text-sm font-medium text-gray-700">Provider:</span>
+		<span class="text-sm font-medium text-gray-700">{$t('common.provider')}:</span>
 		<div class="flex flex-wrap gap-2">
 			{#each providers as provider}
 				{@const isSelected = selectedProviders.includes(provider)}
@@ -61,7 +63,7 @@
 					onclick={() => toggleProvider(provider)}
 				>
 					<span class="h-2 w-2 rounded-full {providerColors[provider] || 'bg-gray-400'}"></span>
-					{providerLabels[provider] || provider}
+					{providerLabels[provider as keyof typeof providerLabels] || provider}
 					{#if isSelected}
 						<span class="ml-1 text-gray-500">✕</span>
 					{/if}
@@ -72,13 +74,13 @@
 
 	<!-- Source language filter -->
 	<div class="flex items-center gap-2">
-		<span class="text-sm font-medium text-gray-700">From:</span>
+		<span class="text-sm font-medium text-gray-700">{$t('common.from')}:</span>
 		<select
 			class="rounded border border-gray-300 px-2 py-1 text-sm"
 			value={selectedSourceLang}
 			onchange={(e) => onSourceLangChange((e.target as HTMLSelectElement).value)}
 		>
-			<option value="">All</option>
+			<option value="">{$t('common.all')}</option>
 			{#each sourceLanguages as lang}
 				<option value={lang}>{lang.toUpperCase()}</option>
 			{/each}
@@ -87,13 +89,13 @@
 
 	<!-- Target language filter -->
 	<div class="flex items-center gap-2">
-		<span class="text-sm font-medium text-gray-700">To:</span>
+		<span class="text-sm font-medium text-gray-700">{$t('common.to')}:</span>
 		<select
 			class="rounded border border-gray-300 px-2 py-1 text-sm"
 			value={selectedTargetLang}
 			onchange={(e) => onTargetLangChange((e.target as HTMLSelectElement).value)}
 		>
-			<option value="">All</option>
+			<option value="">{$t('common.all')}</option>
 			{#each targetLanguages as lang}
 				<option value={lang}>{lang.toUpperCase()}</option>
 			{/each}

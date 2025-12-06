@@ -1,185 +1,154 @@
 # Translation Proxy System (TPS)
 
-高可用、低成本的翻譯中介層 API。整合 SQLite 本地快取、NMT (DeepL/Google) 與 LLM (OpenAI)，實現多層次翻譯策略。
+TPS 是一個高可用、低成本的翻譯中介系統，結合了現代化的 Web 前端介面與強大的後端 API。它整合了 SQLite 本地快取、NMT (DeepL/Google) 與 LLM (OpenAI)，透過智慧路由策略來優化翻譯品質與成本。
 
-## 功能特點
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.12+-blue.svg)
+![SvelteKit](https://img.shields.io/badge/sveltekit-2.0+-orange.svg)
+![FastAPI](https://img.shields.io/badge/fastapi-0.109+-green.svg)
 
-- 🚀 **多層次翻譯策略**: Cache → DeepL → OpenAI → Google
-- 💾 **智慧快取**: SQLite WAL 模式本地快取，大幅減少 API 呼叫
-- 🤖 **AI 校稿**: 可選的 LLM 翻譯品質提升 (Refinement)
-- 💰 **成本控制**: 每日預算熔斷機制，避免超支
-- 🔄 **高可用性**: 自動 Failover 機制，確保服務不中斷
+## ✨ 主要功能
 
-## 翻譯優先級
+### 核心系統 (Backend)
+- 🚀 **多層次翻譯策略**: 優先順序 Cache → DeepL → OpenAI → Google，確保最佳性價比。
+- 💾 **智慧快取**: 使用 SQLite (WAL 模式) 進行本地快取，大幅減少重複 API 呼叫與費用。
+- 🤖 **AI 校稿 (Refinement)**: 支援使用 LLM (如 GPT-4o-mini) 對翻譯結果進行潤飾，提升流暢度。
+- 💰 **成本控制**: 內建每日預算熔斷機制，防止 API 費用超支。
+- 🔄 **高可用性**: 自動 Failover 機制，當某個服務商當機時自動切換至下一個。
+- 📂 **檔案翻譯**: 支援批次檔案上傳與翻譯 (透過 API 或 UI)。
+
+### 使用者介面 (Frontend)
+- 🖥️ **現代化 Dashboard**: 基於 SvelteKit + Tailwind CSS 打造的響應式介面。
+- 📊 **即時統計**: 視覺化顯示 API 使用量、成本估算 (USD/TWD) 與快取命中率。
+- 🌍 **多語言支援**: 介面支援繁體中文與英文切換。
+- 📝 **即時翻譯**: 類似 Google Translate 的文字輸入與即時預覽。
+- 📁 **拖放式檔案翻譯**: 支援拖放上傳檔案進行批次翻譯，並顯示進度條。
+
+## 🏗️ 翻譯優先級架構
 
 | Tier | Provider | 成本 | 說明 |
 |------|----------|------|------|
-| 1 | Local Cache | $0 | 優先查找本地快取 |
-| 2 | DeepL | 低 | 利用每月免費額度 500K 字元 |
-| 3 | OpenAI (gpt-4o-mini) | 極低 | $0.15/1M tokens，比 Google 便宜 90% |
-| 4 | Google Translate | 高 | 最後防線，$20/1M chars |
+| 1 | **Local Cache** | $0 | 優先查找本地資料庫，完全免費且速度最快 |
+| 2 | **DeepL** | 低 | 利用每月免費額度 (500K 字元)，品質優異 |
+| 3 | **OpenAI (gpt-4o-mini)** | 極低 | $0.15/1M tokens，比 Google 便宜 90% 以上 |
+| 4 | **Google Translate** | 中 | 每月 500K 免費額度，超額後 $20/1M chars |
 
-## 快速開始
+## 🛠️ 安裝與設定
 
-### 1. 安裝依賴
+### 前置需求
+- **Python**: 3.12+
+- **Node.js**: 18+
+- **套件管理器**: `uv` (Python), `pnpm` (Node.js)
+
+### 1. 複製專案與設定環境變數
 
 ```bash
-# 安裝 uv (如果尚未安裝)
-curl -LsSf https://astral.sh/uv/install.sh | sh
+git clone <repository-url>
+cd TPS
 
-# 安裝專案依賴
+# 設定後端環境變數
+cp .env.example .env
+```
+
+編輯 `.env` 檔案，填入您的 API Keys：
+
+```env
+DEEPL_API_KEY=your_deepl_key
+OPENAI_API_KEY=your_openai_key
+# GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json (選填)
+DAILY_BUDGET_OPENAI=5.0
+DAILY_BUDGET_GOOGLE=10.0
+```
+
+### 2. 安裝依賴
+
+**後端 (Python):**
+```bash
+# 安裝 uv (如果尚未安裝)
+# Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+# Unix: curl -LsSf https://astral.sh/uv/install.sh | sh
+
 uv sync
 ```
 
-### 2. 設定環境變數
-
+**前端 (SvelteKit):**
 ```bash
-# 複製範例設定檔
-cp .env.example .env
-
-# 編輯 .env 填入你的 API Keys
+cd frontend
+pnpm install
+cd ..
 ```
 
-需要設定的環境變數：
+## 🚀 快速啟動
 
-```env
-DEEPL_API_KEY=your_deepl_api_key
-OPENAI_API_KEY=your_openai_api_key
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/google-credentials.json
-DAILY_BUDGET_GOOGLE=10.0
-DAILY_BUDGET_OPENAI=5.0
+我們提供了方便的腳本，可以一鍵同時啟動後端 API 與前端開發伺服器。
+
+### Windows
+直接雙擊 `scripts/dev.bat`，或在 PowerShell 執行：
+```powershell
+.\scripts\dev.ps1
 ```
 
-### 3. 啟動服務
-
+### macOS / Linux
 ```bash
-# 使用 uv 執行
-uv run tps
-
-# 或直接執行
-uv run python -m tps.app
+chmod +x scripts/dev.sh
+./scripts/dev.sh
 ```
 
-服務將在 `http://localhost:8000` 啟動。
+啟動後：
+- **Frontend UI**: [http://localhost:5173](http://localhost:5173)
+- **Backend API**: [http://localhost:8000](http://localhost:8000)
+- **API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 4. 測試 API
+## 📖 API 使用範例
 
+詳細 API 規格請參考 [API_Documentation.md](./API_Documentation.md)。
+
+### 文字翻譯
 ```bash
-# 基本翻譯
 curl -X POST "http://localhost:8000/translate" \
      -H "Content-Type: application/json" \
-     -d '{"text": "Hello, world!", "source_lang": "en", "target_lang": "zh-tw"}'
-
-# 帶 AI 校稿的翻譯
-curl -X POST "http://localhost:8000/translate" \
-     -H "Content-Type: application/json" \
-     -d '{"text": "Hello, world!", "source_lang": "en", "target_lang": "zh-tw", "enable_refinement": true}'
-
-# 健康檢查
-curl http://localhost:8000/health
-
-# 查看使用統計
-curl http://localhost:8000/stats
+     -d '{
+           "text": "Hello world",
+           "source_lang": "en",
+           "target_lang": "zh-TW",
+           "enable_refinement": true
+         }'
 ```
 
-## API 文檔
-
-啟動服務後，訪問 `http://localhost:8000/docs` 查看 Swagger UI 互動式文檔。
-
-### POST /translate
-
-翻譯文字。
-
-**Request Body:**
-```json
-{
-  "text": "要翻譯的文字",
-  "source_lang": "en",
-  "target_lang": "zh-tw",
-  "format": "plain",
-  "enable_refinement": false
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "text": "翻譯結果",
-    "provider": "deepl",
-    "is_refined": false,
-    "is_cached": false
-  },
-  "error": null
-}
-```
-
-## 開發
-
-### 執行測試
-
+### 檔案翻譯
 ```bash
-# 安裝開發依賴
-uv sync --group dev
-
-# 執行測試
-uv run pytest
-
-# 帶詳細輸出
-uv run pytest -v
+curl -X POST "http://localhost:8000/translate/file" \
+     -F "file=@document.txt" \
+     -F "target_lang=zh-TW"
 ```
 
-### 維護腳本
-
-```bash
-# 清理 90 天前的快取（預設）
-uv run python scripts/cleanup_cache.py
-
-# 清理 30 天前的快取
-uv run python scripts/cleanup_cache.py --days 30
-
-# 預覽要清理的項目（不實際刪除）
-uv run python scripts/cleanup_cache.py --dry-run
-
-# 執行資料庫 VACUUM
-uv run python scripts/vacuum_db.py
-```
-
-### 排程建議
-
-```bash
-# Cron 範例：每週日 3:00 AM 清理快取
-0 3 * * 0 cd /path/to/tps && uv run python scripts/cleanup_cache.py
-
-# 每月 1 日 4:00 AM 執行 VACUUM
-0 4 1 * * cd /path/to/tps && uv run python scripts/vacuum_db.py
-```
-
-## 專案結構
+## 📂 專案結構
 
 ```
 TPS/
-├── src/tps/
-│   ├── api/          # REST API 路由
-│   ├── clients/      # 翻譯 API 客戶端
-│   │   ├── deepl_client.py
-│   │   ├── openai_client.py
-│   │   └── google_client.py
-│   ├── core/         # 核心業務邏輯
-│   │   ├── workflow.py      # 主流程
-│   │   ├── cost_control.py  # 成本控制
-│   │   └── key_generator.py # 快取 Key 生成
-│   ├── db/           # 資料庫層
-│   │   ├── connection.py    # 連線管理
-│   │   └── dao.py           # 資料存取
-│   ├── app.py        # FastAPI 應用
-│   └── config.py     # 設定管理
-├── scripts/          # 維護腳本
-├── tests/            # 測試
-└── pyproject.toml    # 專案設定
+├── src/tps/              # Backend Source Code
+│   ├── api/              # API Routes (FastAPI)
+│   ├── clients/          # Translation Providers (DeepL, OpenAI, Google)
+│   ├── core/             # Core Logic (Cache, Failover)
+│   └── db/               # Database Models & Connection
+├── frontend/             # Frontend Source Code (SvelteKit)
+│   ├── src/routes/       # Pages & Routing
+│   └── src/lib/          # Components & Utilities
+├── scripts/              # Startup Scripts (dev.bat, dev.sh)
+├── tests/                # Python Tests
+├── docs/                 # Documentation
+├── pyproject.toml        # Python Dependencies (uv)
+└── README.md             # This file
 ```
 
-## 授權
+## 📝 支援語言
+
+系統專注於東亞、東南亞及主要旅遊國家語言支援：
+
+- **核心**: 繁體中文 (zh-TW), 簡體中文 (zh-CN), 英文 (en), 日文 (ja), 韓文 (ko)
+- **東南亞**: 馬來文 (ms), 越南文 (vi), 泰文 (th), 印尼文 (id), 菲律賓文 (tl)
+- **歐美/其他**: 法文 (fr), 德文 (de), 西班牙文 (es), 義大利文 (it), 俄文 (ru), 葡萄牙文 (pt), 阿拉伯文 (ar), 印地文 (hi)
+
+## 📄 License
 
 MIT License

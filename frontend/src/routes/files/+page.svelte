@@ -26,24 +26,24 @@
 	// Language options
 	let commonLanguages = $derived([
 		{ value: '', label: $t('common.auto_detect') },
-		{ value: 'zh-TW', label: '繁體中文 (Traditional Chinese)' },
-		{ value: 'zh-CN', label: '简体中文 (Simplified Chinese)' },
-		{ value: 'en', label: 'English' },
-		{ value: 'ja', label: '日本語 (Japanese)' },
-		{ value: 'ko', label: '한국어 (Korean)' },
-		{ value: 'ms', label: 'Bahasa Melayu (Malay)' },
-		{ value: 'vi', label: 'Tiếng Việt (Vietnamese)' },
-		{ value: 'th', label: 'ไทย (Thai)' },
-		{ value: 'id', label: 'Bahasa Indonesia (Indonesian)' },
-		{ value: 'tl', label: 'Tagalog (Filipino)' },
-		{ value: 'fr', label: 'Français (French)' },
-		{ value: 'de', label: 'Deutsch (German)' },
-		{ value: 'es', label: 'Español (Spanish)' },
-		{ value: 'it', label: 'Italiano (Italian)' },
-		{ value: 'ru', label: 'Русский (Russian)' },
-		{ value: 'pt', label: 'Português (Portuguese)' },
-		{ value: 'ar', label: 'العربية (Arabic)' },
-		{ value: 'hi', label: 'हिन्दी (Hindi)' }
+		{ value: 'zh-TW', label: $t('languages.zh-TW') },
+		{ value: 'zh-CN', label: $t('languages.zh-CN') },
+		{ value: 'en', label: $t('languages.en') },
+		{ value: 'ja', label: $t('languages.ja') },
+		{ value: 'ko', label: $t('languages.ko') },
+		{ value: 'ms', label: $t('languages.ms') },
+		{ value: 'vi', label: $t('languages.vi') },
+		{ value: 'th', label: $t('languages.th') },
+		{ value: 'id', label: $t('languages.id') },
+		{ value: 'tl', label: $t('languages.tl') },
+		{ value: 'fr', label: $t('languages.fr') },
+		{ value: 'de', label: $t('languages.de') },
+		{ value: 'es', label: $t('languages.es') },
+		{ value: 'it', label: $t('languages.it') },
+		{ value: 'ru', label: $t('languages.ru') },
+		{ value: 'pt', label: $t('languages.pt') },
+		{ value: 'ar', label: $t('languages.ar') },
+		{ value: 'hi', label: $t('languages.hi') }
 	]);
 
 	let targetLanguageOptions = $derived(commonLanguages.filter((l) => l.value !== ''));
@@ -130,11 +130,11 @@
 				files[index].progress = 100;
 				files[index].result = response.data.text;
 			} else {
-				throw new Error(response.error || 'Translation failed');
+				throw new Error(response.error || $t('files.error_failed'));
 			}
 		} catch (e) {
 			files[index].status = 'error';
-			files[index].error = e instanceof Error ? e.message : 'Unknown error';
+			files[index].error = e instanceof Error ? e.message : $t('files.error_unknown');
 		}
 	}
 
@@ -166,7 +166,7 @@
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="text-2xl font-bold text-slate-800">{$t('files.title')}</h1>
-			<p class="mt-1 text-slate-500">Upload documents to translate them while preserving formatting.</p>
+			<p class="mt-1 text-slate-500">{$t('files.description')}</p>
 		</div>
 		<div class="flex gap-3">
 			<button

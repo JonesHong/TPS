@@ -34,14 +34,14 @@
 	}
 
 	// Track expanded rows
-	let expandedRows = $state<Set<number>>(new Set());
+	let expandedRows = $state<Set<string>>(new Set());
 
-	function toggleRow(id: number) {
-		if (expandedRows.has(id)) {
-			expandedRows.delete(id);
+	function toggleRow(key: string) {
+		if (expandedRows.has(key)) {
+			expandedRows.delete(key);
 			expandedRows = new Set(expandedRows);
 		} else {
-			expandedRows.add(id);
+			expandedRows.add(key);
 			expandedRows = new Set(expandedRows);
 		}
 	}
@@ -68,11 +68,11 @@
 				</tr>
 			{:else}
 				{#each items as item}
-					{@const isExpanded = expandedRows.has(item.id)}
+					{@const isExpanded = expandedRows.has(item.cache_key)}
 					{@const colors = providerColors[item.provider] || { bg: 'bg-slate-100', text: 'text-slate-800' }}
 					<tr
 						class="cursor-pointer transition-colors hover:bg-slate-50/80"
-						onclick={() => toggleRow(item.id)}
+						onclick={() => toggleRow(item.cache_key)}
 					>
 						<td class="whitespace-nowrap px-6 py-4 text-slate-500">
 							{formatDate(item.created_at)}
@@ -91,7 +91,22 @@
 						</td>
 						<td class="max-w-[200px] px-6 py-4">
 							<div class="break-words text-slate-700 {isExpanded ? '' : 'line-clamp-2'}">
-								{isExpanded ? item.translated_text : truncateText(item.translated_text)}
+								{#if item.is_refined && item.refined_text}
+									{#if isExpanded}
+										<div class="mb-2">
+											<span class="text-xs font-bold text-purple-600 uppercase tracking-wider">{$t('history.refined_label')}</span>
+											<p>{item.refined_text}</p>
+										</div>
+										<div class="pt-2 border-t border-slate-100">
+											<span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Original</span>
+											<p class="text-slate-500">{item.translated_text}</p>
+										</div>
+									{:else}
+										{truncateText(item.refined_text)}
+									{/if}
+								{:else}
+									{isExpanded ? item.translated_text : truncateText(item.translated_text)}
+								{/if}
 							</div>
 						</td>
 						<td class="px-6 py-4">
