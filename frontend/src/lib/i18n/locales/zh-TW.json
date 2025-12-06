@@ -48,7 +48,15 @@
     "empty": "找不到翻譯紀錄",
     "error_load": "無法載入翻譯紀錄",
     "refined_label": "已優化",
-    "no_refinement": "-"
+    "no_refinement": "-",
+    "edit": "編輯",
+    "delete": "刪除",
+    "refine": "AI 優化",
+    "edit_title": "編輯翻譯",
+    "confirm_delete": "確定要刪除此翻譯紀錄嗎？",
+    "error_delete": "刪除失敗",
+    "error_update": "更新失敗",
+    "error_refine": "優化失敗"
   },
   "stats": {
     "title": "儀表板統計",
@@ -94,7 +102,10 @@
     "all": "全部",
     "provider": "服務提供者",
     "from": "來源",
-    "to": "目標"
+    "to": "目標",
+    "save": "儲存",
+    "saving": "儲存中...",
+    "cancel": "取消"
   },
   "pagination": {
     "show": "顯示",

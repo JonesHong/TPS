@@ -7,9 +7,12 @@
 		items: TranslationItem[];
 		onSelect?: (item: TranslationItem) => void;
 		onSort?: (field: string, direction: 'asc' | 'desc') => void;
+		onDelete?: (item: TranslationItem) => Promise<void>;
+		onUpdate?: (item: TranslationItem, newTranslated: string, newRefined?: string) => Promise<void>;
+		onRefine?: (item: TranslationItem) => Promise<void>;
 	}
 
-	let { items, onSelect, onSort }: Props = $props();
+	let { items, onSelect, onSort, onDelete, onUpdate, onRefine }: Props = $props();
 
 	const providerColors: Record<string, { bg: string; text: string }> = {
 		cache: { bg: 'bg-emerald-100', text: 'text-emerald-800' },
@@ -22,6 +25,12 @@
 	let sortField = $state<string>('created_at');
 	let sortDirection = $state<'asc' | 'desc'>('desc');
 
+	// Editing state
+	let editingItem = $state<TranslationItem | null>(null);
+	let editTranslated = $state('');
+	let editRefined = $state('');
+	let isSubmitting = $state(false);
+
 	// Column widths (in pixels)
 	let columnWidths = $state<Record<string, number>>({
 		time: 140,
@@ -30,7 +39,7 @@
 		translated: 180,
 		refined: 180,
 		provider: 80,
-		actions: 70
+		actions: 120
 	});
 
 	// Resizing state
@@ -103,6 +112,35 @@
 		resizingColumn = null;
 		document.removeEventListener('mousemove', handleResize);
 		document.removeEventListener('mouseup', stopResize);
+	}
+
+	function openEdit(item: TranslationItem, e: Event) {
+		e.stopPropagation();
+		editingItem = item;
+		editTranslated = item.translated_text;
+		editRefined = item.refined_text || '';
+	}
+
+	async function saveEdit() {
+		if (!editingItem || !onUpdate) return;
+		isSubmitting = true;
+		try {
+			await onUpdate(editingItem, editTranslated, editRefined || undefined);
+			editingItem = null;
+		} finally {
+			isSubmitting = false;
+		}
+	}
+
+	async function handleDelete(item: TranslationItem, e: Event) {
+		e.stopPropagation();
+		if (!confirm($t('history.confirm_delete'))) return;
+		if (onDelete) await onDelete(item);
+	}
+
+	async function handleRefine(item: TranslationItem, e: Event) {
+		e.stopPropagation();
+		if (onRefine) await onRefine(item);
 	}
 
 	// Sorted items (client-side sorting)
@@ -249,12 +287,38 @@
 						</td>
 						<td class="px-3 py-3 text-right" style="width: {columnWidths.actions}px;">
 							<div class="flex items-center justify-end gap-1">
-								{#if item.is_refined}
-									<span class="text-purple-600 bg-purple-50 rounded-full p-1" title={$t('translate.refined')}>
-										<svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								{#if onRefine && !item.is_refined}
+									<button 
+										class="rounded-lg p-1.5 text-purple-600 hover:bg-purple-50 transition-colors"
+										onclick={(e) => handleRefine(item, e)}
+										title={$t('history.refine')}
+									>
+										<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
 										</svg>
-									</span>
+									</button>
+								{/if}
+								{#if onUpdate}
+									<button 
+										class="rounded-lg p-1.5 text-blue-600 hover:bg-blue-50 transition-colors"
+										onclick={(e) => openEdit(item, e)}
+										title={$t('history.edit')}
+									>
+										<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+										</svg>
+									</button>
+								{/if}
+								{#if onDelete}
+									<button 
+										class="rounded-lg p-1.5 text-red-600 hover:bg-red-50 transition-colors"
+										onclick={(e) => handleDelete(item, e)}
+										title={$t('history.delete')}
+									>
+										<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+										</svg>
+									</button>
 								{/if}
 								{#if onSelect}
 									<button 
@@ -275,3 +339,54 @@
 		</tbody>
 	</table>
 </div>
+
+{#if editingItem}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onclick={() => editingItem = null}>
+		<div class="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl" onclick={(e) => e.stopPropagation()}>
+			<h3 class="mb-4 text-lg font-semibold text-slate-900">{$t('history.edit_title')}</h3>
+			
+			<div class="mb-4">
+				<label class="mb-1 block text-sm font-medium text-slate-700">{$t('history.original')}</label>
+				<div class="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 max-h-32 overflow-y-auto">
+					{editingItem.original_text}
+				</div>
+			</div>
+
+			<div class="mb-4">
+				<label class="mb-1 block text-sm font-medium text-slate-700">{$t('history.translated')}</label>
+				<textarea
+					bind:value={editTranslated}
+					class="w-full rounded-lg border border-slate-300 p-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+					rows="4"
+				></textarea>
+			</div>
+
+			<div class="mb-6">
+				<label class="mb-1 block text-sm font-medium text-slate-700">{$t('history.refined')}</label>
+				<textarea
+					bind:value={editRefined}
+					class="w-full rounded-lg border border-slate-300 p-3 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+					rows="4"
+					placeholder={$t('history.no_refinement')}
+				></textarea>
+			</div>
+
+			<div class="flex justify-end gap-3">
+				<button
+					class="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+					onclick={() => editingItem = null}
+					disabled={isSubmitting}
+				>
+					{$t('common.cancel')}
+				</button>
+				<button
+					class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+					onclick={saveEdit}
+					disabled={isSubmitting}
+				>
+					{isSubmitting ? $t('common.saving') : $t('common.save')}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

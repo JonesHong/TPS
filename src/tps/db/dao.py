@@ -145,6 +145,43 @@ class TranslationDAO:
             )
             await conn.commit()
             return cursor.rowcount
+
+    async def delete_translation(self, cache_key: str) -> bool:
+        """Delete a specific translation from cache by key. Returns True if deleted."""
+        async with self.db.get_connection() as conn:
+            cursor = await conn.execute(
+                "DELETE FROM translations WHERE cache_key = ?",
+                (cache_key,)
+            )
+            await conn.commit()
+            return cursor.rowcount > 0
+
+    async def update_translation_content(
+        self, 
+        cache_key: str, 
+        translated_text: str, 
+        refined_text: Optional[str] = None
+    ) -> bool:
+        """Update the content of a cached translation manually."""
+        async with self.db.get_connection() as conn:
+            # Only update if it exists
+            cursor = await conn.execute(
+                """
+                UPDATE translations 
+                SET translated_text = ?, 
+                    refined_text = ?,
+                    is_refined = ?
+                WHERE cache_key = ?
+                """,
+                (
+                    translated_text, 
+                    refined_text, 
+                    1 if refined_text else 0, # If we have refined text, mark as refined
+                    cache_key
+                )
+            )
+            await conn.commit()
+            return cursor.rowcount > 0
     
     # === Usage Statistics Operations ===
     

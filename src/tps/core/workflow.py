@@ -192,6 +192,24 @@ class TranslationWorkflow:
             is_cached=False
         )
     
+    async def refine_existing(
+        self,
+        original_text: str,
+        translated_text: str,
+        source_lang: str,
+        target_lang: str,
+        model: Optional[str] = None
+    ) -> Optional[str]:
+        """
+        Refine an existing translation manually.
+        """
+        refined_result = await self._try_refinement(
+            original_text, translated_text, source_lang, target_lang, model
+        )
+        if refined_result:
+            return refined_result.text
+        return None
+
     async def _execute_translation_chain(
         self,
         text: str,

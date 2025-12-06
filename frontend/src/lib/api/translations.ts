@@ -58,3 +58,23 @@ export async function translateFile(
 export async function getLanguages(): Promise<LanguagesResponse> {
 	return get<LanguagesResponse>('/languages');
 }
+
+export async function deleteTranslation(cacheKey: string): Promise<void> {
+	const response = await fetch(`/api/v1/history/${cacheKey}`, { method: 'DELETE' });
+	if (!response.ok) throw new Error('Failed to delete translation');
+}
+
+export async function updateTranslation(cacheKey: string, translatedText: string, refinedText?: string): Promise<void> {
+	const response = await fetch(`/api/v1/history/${cacheKey}`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ translated_text: translatedText, refined_text: refinedText })
+	});
+	if (!response.ok) throw new Error('Failed to update translation');
+}
+
+export async function refineTranslation(cacheKey: string): Promise<TranslateResponse> {
+	const response = await fetch(`/api/v1/history/${cacheKey}/refine`, { method: 'POST' });
+	if (!response.ok) throw new Error('Failed to refine translation');
+	return response.json();
+}

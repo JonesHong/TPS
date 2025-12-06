@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getTranslations, getLanguages } from '$lib/api';
+	import { getTranslations, getLanguages, deleteTranslation, updateTranslation, refineTranslation } from '$lib/api/translations';
 	import type { TranslationItem, PaginationMeta, LanguagesResponse } from '$lib/types';
 	import { Input } from '$lib/components/ui';
 	import { Pagination } from '$lib/components/common';
@@ -63,6 +63,36 @@
 			error = e instanceof Error ? e.message : $t('history.error_load');
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function handleDelete(item: TranslationItem) {
+		try {
+			await deleteTranslation(item.cache_key);
+			await loadTranslations();
+		} catch (e) {
+			console.error('Failed to delete:', e);
+			alert($t('history.error_delete'));
+		}
+	}
+
+	async function handleUpdate(item: TranslationItem, newTranslated: string, newRefined?: string) {
+		try {
+			await updateTranslation(item.cache_key, newTranslated, newRefined);
+			await loadTranslations();
+		} catch (e) {
+			console.error('Failed to update:', e);
+			alert($t('history.error_update'));
+		}
+	}
+
+	async function handleRefine(item: TranslationItem) {
+		try {
+			await refineTranslation(item.cache_key);
+			await loadTranslations();
+		} catch (e) {
+			console.error('Failed to refine:', e);
+			alert($t('history.error_refine'));
 		}
 	}
 
@@ -184,7 +214,15 @@
 						{:else if error}
 							<div class="p-12 text-center text-red-500">{error}</div>
 						{:else}
-							<TranslationTable {items} {onSelect} />
+												<div class="flex-1 overflow-auto">
+						<TranslationTable 
+							{items} 
+							{onSelect}
+							onDelete={handleDelete}
+							onUpdate={handleUpdate}
+							onRefine={handleRefine}
+						/>
+					</div>
 						{/if}
 					</div>
 

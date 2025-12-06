@@ -28,6 +28,12 @@ class TranslationRequest(BaseModel):
     preferred_provider: Optional[str] = Field(default=None, description="Preferred translation provider: 'auto', 'deepl', 'openai', 'google'")
 
 
+class UpdateTranslationRequest(BaseModel):
+    """Request model for updating a translation manually"""
+    translated_text: str = Field(..., min_length=1, description="Updated translated text")
+    refined_text: Optional[str] = Field(default=None, description="Updated refined text")
+
+
 class TranslationData(BaseModel):
     """Data portion of successful translation response"""
     text: str
@@ -372,6 +378,78 @@ async def list_translations(
             total_pages=total_pages
         )
     )
+
+
+@router.delete("/history/{cache_key}", tags=["Frontend"])
+async def delete_translation_entry(
+    cache_key: str,
+    dao: TranslationDAO = Depends(get_dao)
+) -> APIResponse:
+    """Delete a specific translation from cache."""
+    success = await dao.delete_translation(cache_key)
+    if success:
+        return APIResponse(success=True)
+    else:
+        raise HTTPException(status_code=404, detail="Translation not found")
+
+
+@router.patch("/history/{cache_key}", tags=["Frontend"])
+async def update_translation_entry(
+    cache_key: str,
+    update_data: UpdateTranslationRequest,
+    dao: TranslationDAO = Depends(get_dao)
+) -> APIResponse:
+    """Manually update translation content."""
+    success = await dao.update_translation_content(
+        cache_key, 
+        update_data.translated_text, 
+        update_data.refined_text
+    )
+    if success:
+        return APIResponse(success=True)
+    else:
+        raise HTTPException(status_code=404, detail="Translation not found")
+
+
+@router.post("/history/{cache_key}/refine", tags=["Frontend"])
+async def refine_translation_entry(
+    cache_key: str,
+    workflow: TranslationWorkflow = Depends(get_workflow),
+    dao: TranslationDAO = Depends(get_dao)
+) -> APIResponse:
+    """Manually trigger AI refinement for an existing translation."""
+    # 1. Get the translation
+    translation = await dao.get_cached_translation(cache_key)
+    if not translation:
+        raise HTTPException(status_code=404, detail="Translation not found")
+    
+    # 2. Perform refinement
+    refined_text = await workflow.refine_existing(
+        original_text=translation.original_text,
+        translated_text=translation.translated_text,
+        source_lang=translation.source_lang,
+        target_lang=translation.target_lang
+    )
+    
+    if refined_text:
+        # 3. Update cache
+        await dao.update_translation_content(
+            cache_key=cache_key,
+            translated_text=translation.translated_text,
+            refined_text=refined_text
+        )
+        return APIResponse(
+            success=True,
+            data=TranslationData(
+                text=refined_text,
+                refined_text=refined_text,
+                provider=translation.provider,
+                is_refined=True,
+                is_cached=True
+            )
+        )
+    else:
+        return APIResponse(success=False, error="Refinement failed")
 
 
 @router.get("/stats/dashboard", response_model=DashboardStatsResponse, tags=["Frontend"])
