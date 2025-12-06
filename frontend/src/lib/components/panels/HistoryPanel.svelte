@@ -119,7 +119,7 @@
 	></div>
 
 	<!-- Panel -->
-	<div class="fixed inset-y-0 right-0 z-50 flex w-full max-w-4xl transform flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out">
+	<div class="fixed inset-y-0 right-0 z-50 flex w-full max-w-6xl transform flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out">
 		<!-- Header -->
 		<div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
 			<h2 class="text-xl font-bold text-slate-800">{$t('history.title')}</h2>

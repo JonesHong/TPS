@@ -41,12 +41,14 @@
       "languages": "語言",
       "original": "原文",
       "translated": "譯文",
+      "refined": "校稿後",
       "provider": "提供者",
       "actions": "操作"
     },
     "empty": "找不到翻譯紀錄",
     "error_load": "無法載入翻譯紀錄",
-    "refined_label": "已優化"
+    "refined_label": "已優化",
+    "no_refinement": "-"
   },
   "stats": {
     "title": "儀表板統計",
@@ -57,7 +59,7 @@
     "cache_hit_rate": "快取命中率",
     "est_cost": "預估成本",
     "provider_usage": "服務使用分佈",
-    "daily_volume": "每日流量 (近7天)",
+    "daily_volume": "每日流量",
     "provider_quotas": "服務配額",
     "billing_rules": "計費規則",
     "exchange_rate": "匯率",
@@ -67,7 +69,9 @@
     "days_7": "7天",
     "days_30": "30天",
     "days_90": "3個月",
-    "unit_chars": "字元"
+    "unit_chars": "字元",
+    "unit_requests": "次請求",
+    "unit_translations": "次翻譯"
   },
   "files": {
     "title": "檔案翻譯",
@@ -92,12 +96,22 @@
     "from": "來源",
     "to": "目標"
   },
+  "pagination": {
+    "show": "顯示",
+    "per_page": "筆/頁",
+    "page": "第 {page} 頁，共 {total_pages} 頁（{total} 筆）",
+    "first": "第一頁",
+    "prev": "上一頁",
+    "next": "下一頁",
+    "last": "最後一頁"
+  },
   "providers": {
     "auto": "自動 (DeepL → OpenAI → Google)",
     "deepl": "DeepL (免費額度: 50萬/月)",
     "openai": "OpenAI GPT-4o-mini",
     "google": "Google 翻譯",
-    "cache": "快取"
+    "cache": "快取",
+    "refine": "AI 優化"
   },
   "languages": {
     "zh-TW": "繁體中文",

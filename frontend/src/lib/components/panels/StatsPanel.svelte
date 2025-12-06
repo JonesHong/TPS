@@ -14,15 +14,17 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let isOpenAIExpanded = $state(false);
+	let currentRange = $state(7);
 
 	// Load stats when opened
 	$effect(() => {
 		if (isOpen) {
-			loadStats();
+			loadStats(currentRange);
 		}
 	});
 
-	async function loadStats(days: number = 30) {
+	async function loadStats(days: number = 7) {
+		currentRange = days;
 		loading = true;
 		error = null;
 		try {
@@ -164,7 +166,7 @@
 								</div>
 							</div>
 							<div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-								<DailyVolumeChart data={stats.daily_trend} onRangeChange={handleRangeChange} />
+								<DailyVolumeChart data={stats.daily_trend} days={currentRange} onRangeChange={handleRangeChange} />
 							</div>
 						</div>
 

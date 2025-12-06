@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PaginationMeta } from '$lib/types';
+	import { t } from 'svelte-i18n';
 
 	interface Props {
 		meta: PaginationMeta;
@@ -26,7 +27,7 @@
 <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
 	<!-- Page size selector -->
 	<div class="flex items-center gap-2 text-sm text-gray-600">
-		<span>Show</span>
+		<span>{$t('pagination.show')}</span>
 		<select
 			class="rounded border border-gray-300 px-2 py-1 text-sm"
 			value={meta.page_size}
@@ -36,29 +37,29 @@
 				<option value={size}>{size}</option>
 			{/each}
 		</select>
-		<span>per page</span>
+		<span>{$t('pagination.per_page')}</span>
 	</div>
 
 	<!-- Page info -->
 	<div class="text-sm text-gray-600">
-		Page {meta.page} of {meta.total_pages} ({meta.total} total)
+		{$t('pagination.page', { values: { page: meta.page, total_pages: meta.total_pages, total: meta.total } })}
 	</div>
 
 	<!-- Navigation buttons -->
-	<div class="flex items-center gap-2">
+	<div class="flex items-center gap-1">
 		<button
-			class="rounded border border-gray-300 px-3 py-1.5 text-sm transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+			class="rounded border border-gray-300 px-2 py-1 text-xs transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
 			disabled={meta.page <= 1}
 			onclick={() => goToPage(1)}
 		>
-			First
+			{$t('pagination.first')}
 		</button>
 		<button
-			class="rounded border border-gray-300 px-3 py-1.5 text-sm transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+			class="rounded border border-gray-300 px-2 py-1 text-xs transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
 			disabled={meta.page <= 1}
 			onclick={() => goToPage(meta.page - 1)}
 		>
-			Prev
+			{$t('pagination.prev')}
 		</button>
 		
 		<!-- Page numbers -->
@@ -68,7 +69,7 @@
 				return start + i;
 			}).filter(p => p <= meta.total_pages) as pageNum}
 				<button
-					class="h-8 w-8 rounded text-sm transition-colors {pageNum === meta.page
+					class="h-7 w-7 rounded text-xs transition-colors {pageNum === meta.page
 						? 'bg-primary-600 text-white'
 						: 'border border-gray-300 hover:bg-gray-100'}"
 					onclick={() => goToPage(pageNum)}
@@ -79,18 +80,18 @@
 		</div>
 
 		<button
-			class="rounded border border-gray-300 px-3 py-1.5 text-sm transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+			class="rounded border border-gray-300 px-2 py-1 text-xs transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
 			disabled={meta.page >= meta.total_pages}
 			onclick={() => goToPage(meta.page + 1)}
 		>
-			Next
+			{$t('pagination.next')}
 		</button>
 		<button
-			class="rounded border border-gray-300 px-3 py-1.5 text-sm transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+			class="rounded border border-gray-300 px-2 py-1 text-xs transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
 			disabled={meta.page >= meta.total_pages}
 			onclick={() => goToPage(meta.total_pages)}
 		>
-			Last
+			{$t('pagination.last')}
 		</button>
 	</div>
 </div>

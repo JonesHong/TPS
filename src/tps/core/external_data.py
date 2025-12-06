@@ -5,7 +5,7 @@ import aiohttp
 import asyncio
 import json
 import re
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import Optional, Dict, Any, Literal
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
@@ -77,9 +77,13 @@ class ExternalDataService:
             if row:
                 try:
                     data = json.loads(row['data'])
+                    # Append 'Z' to indicate UTC if not already present
+                    updated_at = row['updated_at']
+                    if updated_at and not updated_at.endswith('Z') and '+' not in updated_at:
+                        updated_at = updated_at.replace(' ', 'T') + 'Z'
                     self._exchange_rate_cache = ExchangeRateData(
                         rate=data.get('USD_TWD', 32.0),
-                        updated_at=row['updated_at']
+                        updated_at=updated_at
                     )
                 except Exception as e:
                     logger.error(f"Failed to parse exchange rate data: {e}")
@@ -90,13 +94,17 @@ class ExternalDataService:
             if row:
                 try:
                     data = json.loads(row['data'])
+                    # Append 'Z' to indicate UTC if not already present
+                    updated_at = row['updated_at']
+                    if updated_at and not updated_at.endswith('Z') and '+' not in updated_at:
+                        updated_at = updated_at.replace(' ', 'T') + 'Z'
                     self._pricing_cache = PricingData(
                         deepl_free_limit=data.get('deepl_free_limit', 500000),
                         google_free_limit=data.get('google_free_limit', 500000),
                         google_price_per_million_chars=data.get('google_price_per_million_chars', 20.0),
                         openai_price_input=data.get('openai_price_input', 0.15),
                         openai_price_output=data.get('openai_price_output', 0.60),
-                        updated_at=row['updated_at']
+                        updated_at=updated_at
                     )
                 except Exception as e:
                     logger.error(f"Failed to parse pricing data: {e}")
@@ -107,7 +115,7 @@ class ExternalDataService:
         rate = await self._fetch_exchange_rate()
         if rate:
             await self._save_to_db('exchange_rate', {'USD_TWD': rate})
-            self._exchange_rate_cache = ExchangeRateData(rate=rate, updated_at=datetime.now().isoformat())
+            self._exchange_rate_cache = ExchangeRateData(rate=rate, updated_at=datetime.now(timezone.utc).isoformat())
             logger.info(f"Updated USD/TWD Exchange Rate: {rate}")
 
         # 2. Fetch/Update Pricing
@@ -127,7 +135,7 @@ class ExternalDataService:
         await self._save_to_db('pricing', pricing)
         self._pricing_cache = PricingData(
             **pricing,
-            updated_at=datetime.now().isoformat()
+            updated_at=datetime.now(timezone.utc).isoformat()
         )
         logger.info("Updated Pricing Data")
 

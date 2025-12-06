@@ -41,12 +41,14 @@
       "languages": "Languages",
       "original": "Original",
       "translated": "Translated",
+      "refined": "Refined",
       "provider": "Provider",
       "actions": "Actions"
     },
     "empty": "No translations found",
     "error_load": "Failed to load translations",
-    "refined_label": "Refined"
+    "refined_label": "Refined",
+    "no_refinement": "-"
   },
   "stats": {
     "title": "Dashboard Statistics",
@@ -57,7 +59,7 @@
     "cache_hit_rate": "Cache Hit Rate",
     "est_cost": "Est. Cost",
     "provider_usage": "Provider Usage",
-    "daily_volume": "Daily Volume (Last 7 Days)",
+    "daily_volume": "Daily Volume",
     "provider_quotas": "Provider Quotas",
     "billing_rules": "Billing Rules",
     "exchange_rate": "Exchange Rate",
@@ -67,7 +69,9 @@
     "days_7": "7 Days",
     "days_30": "30 Days",
     "days_90": "3 Months",
-    "unit_chars": "Characters"
+    "unit_chars": "Characters",
+    "unit_requests": "Requests",
+    "unit_translations": "Translations"
   },
   "files": {
     "title": "File Translation",
@@ -92,12 +96,22 @@
     "from": "From",
     "to": "To"
   },
+  "pagination": {
+    "show": "Show",
+    "per_page": "per page",
+    "page": "Page {page} of {total_pages} ({total} total)",
+    "first": "First",
+    "prev": "Prev",
+    "next": "Next",
+    "last": "Last"
+  },
   "providers": {
     "auto": "Auto (DeepL → OpenAI → Google)",
     "deepl": "DeepL (Free: 500K/month)",
     "openai": "OpenAI GPT-4o-mini",
     "google": "Google Translate",
-    "cache": "Cache"
+    "cache": "Cache",
+    "refine": "AI Refinement"
   },
   "languages": {
     "zh-TW": "Traditional Chinese",

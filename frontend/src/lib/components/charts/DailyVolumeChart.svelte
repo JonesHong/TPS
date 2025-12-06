@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { t } from 'svelte-i18n';
+
 	interface DailyData {
 		date: string;
 		count: number;
@@ -6,14 +8,17 @@
 
 	interface Props {
 		data: DailyData[];
+		days?: number;
 		onRangeChange?: (days: number) => void;
 	}
 
-	let { data, onRangeChange }: Props = $props();
-	let selectedRange = $state(7);
+	let { data, days = 7, onRangeChange }: Props = $props();
+	
+	// Use $derived to keep selectedRange in sync with the days prop
+	let selectedRange = $derived(days);
 
 	// Find the maximum value for scaling
-	let maxCount = $derived(Math.max(...data.map((d) => d.count), 1));
+	let maxCount = $derived(Math.max(...data.map((d) => d.count), 5));
 
 	// Format date for display
 	function formatDate(dateStr: string): string {
@@ -21,9 +26,8 @@
 		return date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
 	}
 
-	function handleRangeChange(days: number) {
-		selectedRange = days;
-		onRangeChange?.(days);
+	function handleRangeChange(newDays: number) {
+		onRangeChange?.(newDays);
 	}
 </script>
 
@@ -31,8 +35,13 @@
 	<!-- Header with controls -->
 	<div class="flex items-center justify-between mb-4">
 		<div class="flex items-center gap-2">
-			<h3 class="text-sm font-medium text-gray-700">Daily Volume</h3>
-			<span class="text-xs text-gray-500">(Translations)</span>
+			<h3 class="text-sm font-medium text-gray-700">
+				{$t('stats.daily_volume')}
+				<span class="font-normal text-gray-500">
+					({days === 90 ? $t('stats.days_90') : days === 30 ? $t('stats.days_30') : $t('stats.days_7')})
+				</span>
+			</h3>
+			<span class="text-xs text-gray-500">({$t('stats.unit_translations')})</span>
 		</div>
 		<div class="flex rounded-lg bg-gray-100 p-1">
 			{#each [7, 30, 90] as days}
@@ -42,7 +51,7 @@
 						: 'text-gray-500 hover:text-gray-700'}"
 					onclick={() => handleRangeChange(days)}
 				>
-					{days === 90 ? '3M' : `${days}D`}
+					{days === 90 ? $t('stats.days_90') : days === 30 ? $t('stats.days_30') : $t('stats.days_7')}
 				</button>
 			{/each}
 		</div>
@@ -67,36 +76,31 @@
 					<div class="flex flex-1 items-end gap-1 border-l border-b border-gray-200 pl-2 pb-2">
 						{#each data as item}
 							{@const heightPercent = (item.count / maxCount) * 100}
-							<div class="group relative flex flex-1 flex-col items-center">
-								<!-- Tooltip -->
-								<div class="absolute bottom-full mb-2 hidden flex-col items-center whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 z-10">
-									<span class="font-bold">{item.count.toLocaleString()}</span>
-									<span class="text-gray-300">{formatDate(item.date)}</span>
-									<!-- Arrow -->
-									<div class="absolute top-full h-0 w-0 border-4 border-transparent border-t-gray-800"></div>
+							<div class="group relative flex flex-1 h-full flex-col items-center justify-end">
+								<!-- Bar label on top -->
+								<div class="text-xs text-gray-600 font-medium mb-1">
+									{item.count > 0 ? item.count : ''}
 								</div>
 								
 								<!-- Bar -->
-								<div class="relative w-full px-0.5 h-full flex items-end">
-									<div
-										class="w-full rounded-t bg-primary-500 transition-all duration-300 hover:bg-primary-600"
-										style="height: {Math.max(heightPercent, 2)}%"
-									></div>
-								</div>
+								<div 
+									class="w-full max-w-[40px] rounded-t bg-blue-500 transition-all duration-300 hover:bg-blue-600 cursor-pointer"
+									style="height: {Math.max(heightPercent, item.count > 0 ? 5 : 0)}%"
+									title="{formatDate(item.date)}: {item.count} 次翻譯"
+								></div>
 							</div>
 						{/each}
 					</div>
 					
 					<!-- X-axis labels -->
-					<div class="flex gap-1 pl-14 pt-2">
-						{#each data.filter((_, i, arr) => {
-							// Show fewer labels for longer ranges
-							if (selectedRange === 7) return true;
-							if (selectedRange === 30) return i % 5 === 0;
-							return i % 15 === 0;
-						}) as item}
-							<div class="flex-1 text-center text-xs text-gray-500 truncate">
-								{formatDate(item.date)}
+					<div class="flex gap-1 pl-2 pt-2">
+						{#each data as item, i}
+							<div class="flex-1 relative h-6">
+								{#if data.length <= 7 || (selectedRange === 7) || (selectedRange === 30 && i % 5 === 0) || (selectedRange === 90 && i % 15 === 0) || i === data.length - 1}
+									<div class="absolute left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
+										{formatDate(item.date)}
+									</div>
+								{/if}
 							</div>
 						{/each}
 					</div>

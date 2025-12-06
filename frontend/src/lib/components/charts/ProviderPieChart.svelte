@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { t } from 'svelte-i18n';
+
 	interface Props {
 		data: Record<string, number>;
 	}
@@ -9,15 +11,17 @@
 		cache: '#10b981', // green
 		deepl: '#3b82f6', // blue
 		openai: '#8b5cf6', // purple
-		google: '#f59e0b' // amber
+		google: '#f59e0b', // amber
+		refine: '#ec4899' // pink
 	};
 
-	const labels: Record<string, string> = {
-		cache: 'Cache',
+	let labels = $derived({
+		cache: $t('providers.cache'),
 		deepl: 'DeepL',
 		openai: 'OpenAI',
-		google: 'Google'
-	};
+		google: 'Google',
+		refine: $t('providers.refine')
+	});
 
 	// Calculate total and percentages
 	let total = $derived(Object.values(data).reduce((sum, val) => sum + val, 0));
@@ -58,7 +62,7 @@
 		>
 			<div class="text-center">
 				<div class="text-2xl font-bold text-gray-900">{total.toLocaleString()}</div>
-				<div class="text-xs text-gray-500">Total</div>
+				<div class="text-xs text-gray-500">{$t('stats.unit_requests')}</div>
 			</div>
 		</div>
 	</div>
@@ -69,7 +73,7 @@
 			<div class="flex items-center gap-2">
 				<div class="h-3 w-3 rounded-full" style="background-color: {segment.color}"></div>
 				<span class="text-sm text-gray-700">
-					{labels[segment.key] || segment.key}
+					{labels[segment.key as keyof typeof labels] || segment.key}
 				</span>
 				<span class="text-sm font-medium text-gray-900">
 					{segment.value.toLocaleString()}

@@ -365,11 +365,23 @@ class TranslationDAO:
             cache_hits = row["cache_hits"] or 0
             provider_usage["cache"] = cache_hits
             
-            # Total requests (translations + cache hits)
-            total_requests = total_translations + cache_hits
+            # Add refine count (from daily_usage_stats where provider='openai_refine')
+            cursor = await conn.execute(
+                """
+                SELECT SUM(request_count) as refine_count 
+                FROM daily_usage_stats 
+                WHERE provider = 'openai_refine'
+                """
+            )
+            row = await cursor.fetchone()
+            refine_count = row["refine_count"] or 0
+            provider_usage["refine"] = refine_count
             
-            # Cache hit rate
-            cache_hit_rate = cache_hits / total_requests if total_requests > 0 else 0.0
+            # Total requests (translations + cache hits + refine)
+            total_requests = total_translations + cache_hits + refine_count
+            
+            # Cache hit rate (based on translation requests only, not refine)
+            cache_hit_rate = cache_hits / (total_translations + cache_hits) if (total_translations + cache_hits) > 0 else 0.0
             
             # Total cost from daily_usage_stats
             cursor = await conn.execute(
@@ -403,12 +415,13 @@ class TranslationDAO:
                     "cost": round(row["cost"] or 0.0, 6)
                 }
             
-            # Daily trend (last N days)
+            # Daily trend (last N days) - include all requests except cache
             cursor = await conn.execute(
                 f"""
                 SELECT date, SUM(request_count) as count 
                 FROM daily_usage_stats 
                 WHERE date >= date('now', '-{days} days')
+                  AND provider != 'cache'
                 GROUP BY date
                 ORDER BY date ASC
                 """
